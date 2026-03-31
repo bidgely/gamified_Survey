@@ -372,6 +372,32 @@
             line-height: 1;
         }
 
+        .stepper-input {
+            font-family: 'DM Serif Display', serif;
+            font-size: 52px;
+            color: white;
+            width: 160px;
+            text-align: center;
+            line-height: 1;
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid var(--border-accent);
+            outline: none;
+            padding: 0 0 4px;
+            appearance: textfield;
+            -moz-appearance: textfield;
+        }
+
+        .stepper-input::-webkit-outer-spin-button,
+        .stepper-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .stepper-input:focus {
+            border-bottom-color: var(--accent);
+        }
+
         .stepper-unit {
             font-size: 13px;
             color: var(--text-dim);
@@ -5263,7 +5289,7 @@
                 // Position garage on the RIGHT side with small gap
                 const garageScale = 2.0;                          // smaller than house
                 const garageHalfW = 2 * garageScale;              // = 4 (garage geo half-width × scale)
-                const garageGap = 2;                              // small gap between house and garage
+                const garageGap = 8;                              // gap between house and garage (closer to fence)
                 const garageX = houseWidth / 2 + garageGap + garageHalfW;  // e.g. 7.5+2+4 = 13.5
                 const garageZ = houseDepth / 2 - (2.5 * garageScale);     // align front with house front
 
@@ -5735,14 +5761,11 @@
                 const stepVal = question.step || 50;
                 html += `
                     <div class="number-stepper">
-                        <button class="stepper-btn" id="stepperMinus" ${currentVal <= minVal ? 'disabled' : ''}>−</button>
                         <div>
-                            <div class="stepper-value" id="stepperValue">${currentVal.toLocaleString()}</div>
+                            <input type="number" class="stepper-input" id="stepperInput" value="${currentVal}" min="${minVal}" max="${maxVal}">
                             <div class="stepper-unit">${question.unit || 'sq ft'}</div>
                         </div>
-                        <button class="stepper-btn" id="stepperPlus" ${currentVal >= maxVal ? 'disabled' : ''}>+</button>
                     </div>
-                    <input type="hidden" id="numberInput" value="${currentVal}">
                 `;
             } else {
                 if (question.type === 'MULTIPLE') {
@@ -5832,30 +5855,36 @@
 
                 // Wire stepper if NUMBER question
                 if (question.type === 'NUMBER') {
-                    let val = parseInt(document.getElementById('numberInput').value) || 1500;
+                    const inputEl = document.getElementById('stepperInput');
+                    let val = parseInt(inputEl.value) || 1500;
                     const minVal = question.min || 100;
                     const maxVal = question.max || 9999;
                     const stepVal = question.step || 50;
 
-                    const valEl = document.getElementById('stepperValue');
-                    const minusBtn = document.getElementById('stepperMinus');
-                    const plusBtn = document.getElementById('stepperPlus');
+                    inputEl.addEventListener('input', () => {
+                        const parsed = parseInt(inputEl.value);
+                        if (!isNaN(parsed) && parsed >= minVal && parsed <= maxVal) {
+                            val = parsed;
+                            surveyState.answers[question.id] = String(val);
+                            surveyState.livingArea = val;
+                        }
+                    });
 
-                    const update = (dir) => {
-                        val = dir === '+' ? Math.min(val + stepVal, maxVal) : Math.max(val - stepVal, minVal);
-                        valEl.classList.remove('tick-up', 'tick-down');
-                        void valEl.offsetWidth;
-                        valEl.classList.add(dir === '+' ? 'tick-up' : 'tick-down');
-                        valEl.textContent = val.toLocaleString();
-                        document.getElementById('numberInput').value = val;
+                    inputEl.addEventListener('blur', () => {
+                        const parsed = parseInt(inputEl.value);
+                        if (isNaN(parsed) || parsed < minVal) {
+                            val = minVal;
+                        } else if (parsed > maxVal) {
+                            val = maxVal;
+                        } else {
+                            val = parsed;
+                        }
+                        inputEl.value = val;
                         surveyState.answers[question.id] = String(val);
                         surveyState.livingArea = val;
-                        minusBtn.disabled = val <= minVal;
-                        plusBtn.disabled = val >= maxVal;
-                    };
+                        updateScene();
+                    });
 
-                    minusBtn.addEventListener('click', () => update('-'));
-                    plusBtn.addEventListener('click', () => update('+'));
                     // Set initial answer if not set
                     if (!surveyState.answers[question.id]) {
                         surveyState.answers[question.id] = String(val);
