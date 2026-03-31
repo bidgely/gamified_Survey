@@ -27,6 +27,12 @@
             --radius-card: 24px;
             --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
             --ease: cubic-bezier(0.4, 0, 0.2, 1);
+            /* Construction / Bob the Builder theme */
+            --bob-yellow: #f59e0b;
+            --bob-amber: #d97706;
+            --bob-dim: rgba(245, 158, 11, 0.12);
+            --bob-glow: rgba(245, 158, 11, 0.35);
+            --bob-steel: #374151;
         }
 
         * {
@@ -130,40 +136,152 @@
             pointer-events: none;
         }
 
-        /* Progress dots row */
+        /* ── Compact progress header ── */
         .progress-row {
             display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 14px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .progress-header {
+            display: flex;
             align-items: center;
-            gap: 12px;
-            margin-bottom: 22px;
-            padding-bottom: 18px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+            justify-content: space-between;
+        }
+
+        .progress-phase-name {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: var(--bob-yellow);
+        }
+
+        .progress-step-count {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-dim);
         }
 
         .progress-track {
-            flex: 1;
-            height: 4px;
-            border-radius: 4px;
-            background: rgba(255, 255, 255, 0.08);
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(255,255,255,0.08);
             overflow: hidden;
             position: relative;
         }
 
         .progress-fill {
             height: 100%;
-            border-radius: 4px;
-            background: linear-gradient(90deg, var(--accent), #818cf8);
-            box-shadow: 0 0 10px var(--accent-glow);
-            transition: width 0.4s var(--spring);
+            border-radius: 3px;
+            transition: width 0.5s var(--spring);
+            background: linear-gradient(90deg, var(--bob-yellow), var(--bob-amber));
         }
 
-        .progress-counter {
-            font-size: 11px;
-            color: var(--text-dim);
-            font-weight: 500;
-            letter-spacing: 0.04em;
-            flex-shrink: 0;
+        /* ── XP + Level + Reward teaser — single compact row ── */
+        .xp-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .xp-display {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--bob-yellow);
             white-space: nowrap;
+        }
+
+        .xp-value {
+            transition: transform 0.25s var(--spring);
+        }
+
+        .xp-value.pop {
+            animation: xp-pop 0.4s var(--spring);
+        }
+
+        @keyframes xp-pop {
+            0% { transform: scale(1); }
+            40% { transform: scale(1.35); color: #fbbf24; }
+            100% { transform: scale(1); }
+        }
+
+        .xp-level {
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 0.07em;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.55);
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.08);
+            padding: 2px 7px;
+            border-radius: 6px;
+            white-space: nowrap;
+        }
+
+        .xp-next-reward {
+            margin-left: auto;
+            font-size: 10px;
+            color: rgba(255,255,255,0.4);
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .xp-next-reward .reward-icon {
+            font-size: 12px;
+        }
+
+        .xp-bonus {
+            position: fixed;
+            pointer-events: none;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--bob-yellow);
+            z-index: 100;
+            animation: xp-float 1s ease-out forwards;
+        }
+
+        @keyframes xp-float {
+            0% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-40px); }
+        }
+
+        /* ── Streak indicator ── */
+        .streak-indicator {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--bob-yellow);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .streak-indicator.active {
+            opacity: 1;
+        }
+
+        .streak-fire {
+            font-size: 13px;
+            animation: streak-pulse 0.6s ease infinite alternate;
+        }
+
+        @keyframes streak-pulse {
+            from { transform: scale(1); }
+            to { transform: scale(1.15); }
         }
 
         /* Keep old IDs functional but hidden (JS still sets width/text) */
@@ -173,15 +291,22 @@
         .question-container {
             width: 100%;
             flex: 1;
+            background:
+                repeating-linear-gradient(0deg, transparent, transparent 19px, rgba(96,165,250,0.03) 19px, rgba(96,165,250,0.03) 20px),
+                repeating-linear-gradient(90deg, transparent, transparent 19px, rgba(96,165,250,0.03) 19px, rgba(96,165,250,0.03) 20px);
+            border-radius: 8px;
+            padding: 2px;
         }
 
         .question-topic {
             font-size: 11px;
             text-transform: uppercase;
             letter-spacing: 1.5px;
-            color: #60a5fa;
-            margin-bottom: 6px;  /* REDUCED from 12px */
+            color: var(--bob-yellow);
+            margin-bottom: 6px;
             font-weight: 600;
+            padding-left: 10px;
+            border-left: 3px solid var(--bob-yellow);
         }
 
         .question-text {
@@ -190,6 +315,9 @@
             line-height: 1.35;
             color: white;
             margin-bottom: 14px;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed rgba(255,255,255,0.08);
+            text-shadow: 0 0 20px rgba(96,165,250,0.08);
         }
 
         .question-hint {
@@ -261,6 +389,11 @@
             color: rgba(255, 255, 255, 0.55);
         }
 
+        .choice-btn.selected .choice-icon,
+        .choice-btn.selected-multi .choice-icon {
+            filter: drop-shadow(0 0 4px var(--bob-glow));
+        }
+
         .choice-btn.selected .choice-title,
         .choice-btn.selected-multi .choice-title {
             color: #fff;
@@ -271,6 +404,27 @@
             color: rgba(255, 255, 255, 0.6);
         }
 
+        /* Rivet indicator on left edge */
+        .choice-btn::after {
+            content: '';
+            position: absolute;
+            left: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.12);
+            transition: all 0.25s ease;
+            z-index: 2;
+        }
+
+        .choice-btn.selected::after,
+        .choice-btn.selected-multi::after {
+            background: var(--bob-yellow);
+            box-shadow: 0 0 8px var(--bob-glow);
+        }
+
         .choice-btn::before {
             content: '';
             position: absolute;
@@ -278,14 +432,15 @@
             left: -100%;
             width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(96, 165, 250, 0.08), transparent);
+            background: linear-gradient(90deg, transparent, rgba(245, 158, 11, 0.08), transparent);
             transition: left 0.45s ease;
         }
 
         .choice-btn:hover {
-            border-color: rgba(96, 165, 250, 0.45);
-            background: rgba(96, 165, 250, 0.07);
-            transform: translateY(-1px);
+            border-color: rgba(245, 158, 11, 0.45);
+            background: rgba(245, 158, 11, 0.06);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
             color: white;
         }
 
@@ -296,15 +451,15 @@
         /* Unified selected state for both single and multi */
         .choice-btn.selected,
         .choice-btn.selected-multi {
-            border-color: var(--accent);
-            border-left-width: 3px;
-            background: var(--accent-dim);
+            border-color: var(--bob-yellow);
+            border-left-width: 4px;
+            background: var(--bob-dim);
             color: white;
         }
 
         /* Checkmark for multi-select */
         .choice-btn.selected-multi .choice-check {
-            color: var(--accent);
+            color: var(--bob-yellow);
             font-size: 13px;
             font-weight: 700;
             flex-shrink: 0;
@@ -419,6 +574,57 @@
         .stepper-value.tick-up { animation: tick-up 0.18s ease; }
         .stepper-value.tick-down { animation: tick-down 0.18s ease; }
 
+        @keyframes choice-stamp {
+            0% { transform: scale(1); }
+            30% { transform: scale(0.96); }
+            60% { transform: scale(1.03); }
+            100% { transform: scale(1); }
+        }
+        .choice-btn.just-selected {
+            animation: choice-stamp 0.3s ease;
+        }
+
+        /* Phase completion banner */
+        .phase-banner {
+            position: absolute;
+            top: 45%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(245, 158, 11, 0.12);
+            border: 1px solid rgba(245, 158, 11, 0.35);
+            border-radius: 16px;
+            padding: 14px 28px;
+            color: var(--bob-yellow);
+            font-weight: 700;
+            font-size: 15px;
+            text-align: center;
+            z-index: 20;
+            pointer-events: none;
+            white-space: nowrap;
+            animation: phase-celebrate 1.8s ease forwards;
+            backdrop-filter: blur(8px);
+        }
+
+        .phase-banner .phase-banner-sub {
+            font-size: 11px;
+            font-weight: 500;
+            color: rgba(255,255,255,0.6);
+            margin-top: 4px;
+        }
+
+        @keyframes phase-celebrate {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.7); }
+            15% { opacity: 1; transform: translate(-50%, -50%) scale(1.08); }
+            75% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(0.95); }
+        }
+
+        /* Confetti */
+        @keyframes confetti-fall {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+
         /* Keep old class for fallback */
         .number-input {
             background: rgba(255, 255, 255, 0.06);
@@ -454,23 +660,27 @@
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #10b981, #059669);
-            color: white;
+            background: linear-gradient(135deg, var(--bob-yellow), var(--bob-amber));
+            color: #1a1a2e;
             flex: 1;
+            font-weight: 700;
         }
 
         .btn-primary:hover:not(:disabled) {
             transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.4);
+            box-shadow: 0 10px 30px var(--bob-glow);
         }
 
         .btn-secondary {
-            background: rgba(255, 255, 255, 0.08);
-            color: white;
+            background: transparent;
+            color: rgba(255, 255, 255, 0.7);
+            border: 1px dashed rgba(255, 255, 255, 0.2);
         }
 
         .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.12);
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.35);
+            color: white;
         }
 
         .btn:disabled {
@@ -531,7 +741,7 @@
             font-family: 'DM Serif Display', serif;
             font-size: 56px;
             margin-bottom: 20px;
-            background: linear-gradient(135deg, #10b981, #60a5fa);
+            background: linear-gradient(135deg, var(--bob-yellow), #fbbf24);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -551,13 +761,42 @@
             margin-bottom: 40px;
         }
 
+        .xp-final {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 24px;
+            padding: 14px 24px;
+            background: var(--bob-dim);
+            border: 1px solid rgba(245,158,11,0.25);
+            border-radius: 14px;
+        }
+
+        .xp-final-value {
+            font-family: 'DM Serif Display', serif;
+            font-size: 36px;
+            color: var(--bob-yellow);
+        }
+
+        .xp-final-level {
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--bob-yellow);
+            background: rgba(245,158,11,0.15);
+            padding: 4px 12px;
+            border-radius: 8px;
+        }
+
         .badge {
-            background: rgba(96, 165, 250, 0.12);
-            border: 1px solid rgba(96, 165, 250, 0.3);
+            background: var(--bob-dim);
+            border: 1px solid rgba(245, 158, 11, 0.25);
             padding: 10px 20px;
             border-radius: 20px;
             font-size: 14px;
-            color: #60a5fa;
+            color: var(--bob-yellow);
             font-weight: 500;
         }
 
@@ -957,9 +1196,10 @@
 
     <div class="completion-screen" id="completionScreen">
         <div class="completion-card">
-            <div class="completion-emoji">🏡</div>
-            <h1 class="completion-title">Your Home is Ready!</h1>
-            <p class="completion-subtitle">Thank you for completing your home profile</p>
+            <div class="completion-emoji">👷</div>
+            <h1 class="completion-title">Bob Says: Built!</h1>
+            <p class="completion-subtitle">Your home profile is complete</p>
+            <div class="xp-final" id="xpFinal"></div>
             <div class="summary-badges" id="summaryBadges"></div>
             <div style="display: flex; gap: 12px; justify-content: center; margin-top: 24px; flex-wrap: wrap;">
                 <button class="btn btn-primary" onclick="showcaseCompleteHouse()">🎬 House Tour</button>
@@ -1025,7 +1265,9 @@
             floors: 1,
             occupants: 2,
             livingArea: 1500,
-            dwellingType: 'SingleFamily'
+            dwellingType: 'SingleFamily',
+            xp: 0,
+            xpAwarded: {}  // track which questions already awarded XP
         };
 
         const placedObjects = {
@@ -5736,11 +5978,97 @@
         // SURVEY UI & INTERACTION
         // =================================================================
 
+        const constructionPhases = [
+            { name: 'Foundation', icon: '🧱', range: [0, 2] },
+            { name: 'Framing',    icon: '🪵', range: [3, 5] },
+            { name: 'Systems',    icon: '🔧', range: [6, 8] },
+            { name: 'Finishing',  icon: '🎨', range: [9, 11] },
+            { name: 'Inspection', icon: '📋', range: [12, 14] }
+        ];
+        const phaseKeys = ['foundation', 'framing', 'systems', 'finishing', 'inspection'];
+
+        function getPhaseInfo(idx) {
+            for (let i = 0; i < constructionPhases.length; i++) {
+                if (idx >= constructionPhases[i].range[0] && idx <= constructionPhases[i].range[1]) {
+                    const phase = constructionPhases[i];
+                    const withinPhase = idx - phase.range[0] + 1;
+                    const phaseTotal = phase.range[1] - phase.range[0] + 1;
+                    return { phase, phaseIdx: i, key: phaseKeys[i], withinPhase, phaseTotal };
+                }
+            }
+            return { phase: constructionPhases[4], phaseIdx: 4, key: 'inspection', withinPhase: 3, phaseTotal: 3 };
+        }
+
+        // Eco-friendly choices that earn bonus XP
+        const ecoChoices = { Q6: 'heatPump', Q9: 'yes', Q12: 'yes', Q13: 'yes' };
+
+        function getBuilderLevel(xp) {
+            if (xp >= 121) return { title: 'Master Builder', icon: '👷' };
+            if (xp >= 76)  return { title: 'Foreman', icon: '🏗️' };
+            if (xp >= 31)  return { title: 'Journeyman', icon: '🔨' };
+            return { title: 'Apprentice', icon: '🪜' };
+        }
+
+        function awardXP(questionId, value) {
+            if (surveyState.xpAwarded[questionId]) return 0;
+            let earned = 10; // base XP
+            // Bonus for eco choices
+            if (ecoChoices[questionId]) {
+                const ecoVal = ecoChoices[questionId];
+                const answer = surveyState.answers[questionId];
+                if (answer === ecoVal || (Array.isArray(answer) && answer.includes(ecoVal))) {
+                    earned += 5;
+                }
+            }
+            surveyState.xp += earned;
+            surveyState.xpAwarded[questionId] = true;
+            return earned;
+        }
+
+        function showXPFloat(amount) {
+            const el = document.createElement('div');
+            el.className = 'xp-bonus';
+            el.textContent = `+${amount} XP`;
+            // Position near the XP display in the sidebar
+            el.style.left = '180px';
+            el.style.top = '85px';
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 1000);
+            // Pop the XP value
+            const xpVal = document.getElementById('xpValue');
+            if (xpVal) {
+                xpVal.classList.remove('pop');
+                void xpVal.offsetWidth;
+                xpVal.classList.add('pop');
+            }
+        }
+
         function buildProgressHTML(currentIdx, total) {
             const pct = ((currentIdx + 1) / total) * 100;
+            const info = getPhaseInfo(currentIdx);
+            const level = getBuilderLevel(surveyState.xp);
+
+            // Milestone markers at phase boundaries (20%, 40%, 60%, 80%)
+            let milestones = '';
+            for (let i = 0; i < 4; i++) {
+                const pos = ((i + 1) * 20);
+                const reached = pct >= pos;
+                milestones += `<div class="progress-milestone ${reached ? 'reached' : ''}" style="left:${pos}%">${constructionPhases[i].icon}</div>`;
+            }
+
             return `<div class="progress-row">
-                <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
-                <span class="progress-counter">Q${currentIdx + 1} / ${total}</span>
+                <div class="progress-phase-label">
+                    <span class="progress-phase-name">${info.phase.icon} ${info.phase.name} Phase</span>
+                    <span class="progress-phase-counter">${info.withinPhase}/${info.phaseTotal}</span>
+                </div>
+                <div class="progress-track">
+                    <div class="progress-fill" data-phase="${info.key}" data-hat="🚧" style="width:${pct}%"></div>
+                    <div class="progress-milestones">${milestones}</div>
+                </div>
+            </div>
+            <div class="xp-row">
+                <div class="xp-display">${level.icon} <span class="xp-value" id="xpValue">${surveyState.xp} XP</span></div>
+                <span class="xp-level">${level.title}</span>
             </div>`;
         }
 
@@ -5809,14 +6137,14 @@
                         ← Previous
                     </button>
                     <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()">
-                        ${currentIdx === total - 1 ? 'Complete Survey' : 'Next →'}
+                        ${currentIdx === total - 1 ? 'Finish the Build!' : 'Next →'}
                     </button>
                 </div>
             `;
             return html;
         }
 
-        function renderQuestion(direction) {
+        function renderQuestion(direction, justSelectedValue) {
             const question = surveyQuestions[surveyState.currentQuestionIndex];
             const container = document.getElementById('questionContainer');
 
@@ -5896,6 +6224,17 @@
                 if (direction && content) {
                     requestAnimationFrame(() => {
                         content.classList.remove('entering', 'entering-back');
+                    });
+                }
+
+                // Apply stamp animation to the just-selected button after re-render
+                if (justSelectedValue && !direction) {
+                    const btns = container.querySelectorAll('.choice-btn');
+                    btns.forEach(btn => {
+                        if (btn.getAttribute('onclick')?.includes("'" + justSelectedValue + "'")) {
+                            btn.classList.add('just-selected');
+                            setTimeout(() => btn.classList.remove('just-selected'), 350);
+                        }
                     });
                 }
             };
@@ -6003,6 +6342,28 @@
             }
         }
 
+        function showPhaseBanner(title, subtitle) {
+            const container = document.getElementById('questionContainer');
+            if (!container) return;
+            const banner = document.createElement('div');
+            banner.className = 'phase-banner';
+            banner.innerHTML = `${title}<div class="phase-banner-sub">${subtitle}</div>`;
+            container.style.position = 'relative';
+            container.appendChild(banner);
+            setTimeout(() => banner.remove(), 2000);
+        }
+
+        function spawnConfetti() {
+            const colors = ['#f59e0b','#10b981','#60a5fa','#ef4444','#8b5cf6','#fbbf24'];
+            for (let i = 0; i < 50; i++) {
+                const el = document.createElement('div');
+                const size = 6 + Math.random() * 8;
+                el.style.cssText = `position:fixed;top:-10px;left:${Math.random()*100}vw;width:${size}px;height:${size}px;background:${colors[i % colors.length]};border-radius:${Math.random() > 0.5 ? '50%' : '2px'};z-index:9999;pointer-events:none;animation:confetti-fall ${1.5 + Math.random() * 2}s ease-out ${Math.random() * 0.6}s forwards;`;
+                document.body.appendChild(el);
+                setTimeout(() => el.remove(), 4500);
+            }
+        }
+
         function updateRoomLabel(roomLabel) {
             const label = document.getElementById('roomLabel');
             label.querySelector('.room-emoji').textContent = roomLabel.emoji;
@@ -6054,7 +6415,6 @@
             if (humorousFeedback[questionId] && humorousFeedback[questionId][value]) {
                 showMascotFeedback(humorousFeedback[questionId][value]);
             } else {
-                // Generic positive reinforcement if no specific humorous feedback
                 const generic = [
                     "Nice choice! You're making progress! 🚀",
                     "Wow! You're an energy expert in the making! 🎓",
@@ -6062,6 +6422,12 @@
                     "Great! Your energy profile is looking sharper than my hammer! 🔨"
                 ];
                 showMascotFeedback(generic[Math.floor(Math.random() * generic.length)]);
+            }
+
+            // Award XP
+            const earned = awardXP(questionId, value);
+            if (earned > 0) {
+                showXPFloat(earned);
             }
             if (questionId === 'Q4') {
                 // Handle bedroom count including "4+" option
@@ -6087,7 +6453,7 @@
             }
 
             // Re-render question to update selections (no transition direction = in-place)
-            renderQuestion(null);
+            renderQuestion(null, value);
 
             // Update 3D scene
             console.log('   🔄 Rebuilding house with new configuration...');
@@ -6108,14 +6474,31 @@
             await submitAnswerToAPI(question);
 
             if (surveyState.currentQuestionIndex < surveyQuestions.length - 1) {
+                const prevIdx = surveyState.currentQuestionIndex;
                 surveyState.currentQuestionIndex++;
+                const newIdx = surveyState.currentQuestionIndex;
+
                 // Reveal camera controls after Q3 (when rooms start being built)
                 const controls = document.getElementById('cameraControls');
-                if (controls && surveyState.currentQuestionIndex >= 3) {
+                if (controls && newIdx >= 3) {
                     controls.classList.add('visible');
                 }
+
+                // Phase completion celebration
+                const prevPhase = getPhaseInfo(prevIdx).phaseIdx;
+                const newPhase = getPhaseInfo(newIdx).phaseIdx;
+                if (newPhase > prevPhase) {
+                    const completed = constructionPhases[prevPhase];
+                    const next = constructionPhases[newPhase];
+                    // Phase bonus XP
+                    surveyState.xp += 15;
+                    showXPFloat(15);
+                    // Show banner
+                    showPhaseBanner(completed.icon + ' ' + completed.name + ' Complete!', 'Starting ' + next.name + ' Phase ' + next.icon);
+                    showMascotFeedback('Phase complete! Bob is proud of you! On to ' + next.name + '!');
+                }
+
                 renderQuestion('forward');
-                // Update 3D scene with new appliances/people based on current answers
                 updateScene();
             } else {
                 completeSurvey();
@@ -6177,24 +6560,40 @@
             // Set overview camera
             setCameraView('overview');
 
+            // Confetti celebration!
+            spawnConfetti();
+            setTimeout(() => spawnConfetti(), 800);
+
+            // Bob's finale message based on eco score
+            const isSolar = surveyState.answers.Q12 === 'yes';
+            const isEV = surveyState.answers.Q13 === 'yes';
+            const hasHeatPump = surveyState.answers.Q6 && surveyState.answers.Q6.includes('heatPump');
+            const hasSmartThermostat = surveyState.answers.Q9 === 'yes';
+            const ecoCount = [isSolar, isEV, hasHeatPump, hasSmartThermostat].filter(Boolean).length;
+
+            const finalMsg = ecoCount >= 3 ? "Master Builder AND eco-champion! Bob is speechless! Well... almost! 🏆🌿" :
+                             ecoCount >= 1 ? "Home built with some green choices! Bob tips his hard hat to you! 👷🌱" :
+                             "Home sweet home is ready! Consider some eco upgrades next time! 🏠";
+            showMascotFeedback(finalMsg);
+
             // Show completion screen
             setTimeout(() => {
                 const completionScreen = document.getElementById('completionScreen');
                 completionScreen.classList.add('visible');
 
+                // XP tally
+                const level = getBuilderLevel(surveyState.xp);
+                document.getElementById('xpFinal').innerHTML = `
+                    <span class="xp-final-value">${level.icon} ${surveyState.xp} XP</span>
+                    <span class="xp-final-level">${level.title}</span>
+                `;
+
                 // Generate summary badges
                 const badgesContainer = document.getElementById('summaryBadges');
                 let html = '';
 
-                // Core Stats
                 html += `<div class="badge">🏠 ${surveyState.answers.Q1 || 'Home'}</div>`;
                 html += `<div class="badge">🛏️ ${surveyState.bedrooms} Beds</div>`;
-                
-                // GAMIFICATION: Eco-Badges Logic
-                const isSolar = surveyState.answers.Q12 === 'yes';
-                const isEV = surveyState.answers.Q13 === 'yes';
-                const hasHeatPump = surveyState.answers.Q6 && surveyState.answers.Q6.includes('heatPump');
-                const hasSmartThermostat = surveyState.answers.Q9 === 'yes';
 
                 if (isSolar) {
                     html += `<div class="badge gold">☀️ Sun Catcher</div>`;
@@ -6234,6 +6633,8 @@
             surveyState.floors = 1;
             surveyState.occupants = 2;
             surveyState.livingArea = 1500;
+            surveyState.xp = 0;
+            surveyState.xpAwarded = {};
 
             document.getElementById('completionScreen').classList.remove('visible');
             document.getElementById('surveyPanel').classList.remove('hidden');
