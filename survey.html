@@ -4315,13 +4315,7 @@
             rightWall.castShadow = true;
             group.add(rightWall);
 
-            // Roof - lighter gray
-            const roofGeometry = new THREE.BoxGeometry(4.2, 0.1, 5.2);
-            const roofMaterial = new THREE.MeshStandardMaterial({ color: 0x9a9a9a, roughness: 0.7, metalness: 0.0 });
-            const roof = new THREE.Mesh(roofGeometry, roofMaterial);
-            roof.position.set(0, 3.05, 0);
-            roof.castShadow = true;
-            group.add(roof);
+            // Roof removed for open-air modern carport design as requested.
 
             // Garage door frame (open-front for visibility)
             const doorFrameMat = new THREE.MeshStandardMaterial({ color: 0x333333, roughness: 0.4, metalness: 0.3 });
@@ -5190,22 +5184,42 @@
             }
 
             // Solar panels - On BACK of roof (don't block front view!)
-            if (answers.Q12 === 'yes') {
+            if (!needsCutawayView && answers.Q12 === 'yes') {
                 console.log('   ☀️ Creating Solar Panels on BACK of ROOF - LARGE');
-                const roofY = surveyState.floors * 4.5 + 1.5;  // Correct: use floorHeight = 4.5
+                const buildingStyle = answers.Q1_Dwelling || 'singleFamily';
+                const isFlatRoof = (buildingStyle === 'apartment' || buildingStyle === 'condo');
+                
                 const panelCount = 3;  // 3 panels
                 for (let i = 0; i < panelCount; i++) {
                     const panel = createSolarPanel();
-                    // Place on BACK of roof (negative Z) so they don't block front view
-                    const xSpacing = 2.0;
-                    const xStart = -(panelCount - 1) * xSpacing / 2;
-                    const backZ = -5.0;  // BACK of roof (deeper for bigger house)
-                    panel.position.set(xStart + i * xSpacing, roofY, backZ);
-                    panel.scale.set(2.0, 2.0, 2.0);  // 2.0X LARGER
-                    panel.rotation.x = -Math.PI / 8;  // Slight tilt for realistic solar angle
-                    appliancesGroup.add(panel);
-                    placedObjects.solar.push(panel);
-                    console.log('      ☀️ Solar Panel ' + (i+1) + ' on BACK of roof at z=' + backZ);
+                    const zSpacing = 2.4;
+                    const zStart = -(panelCount - 1) * zSpacing / 2;
+                    const panelZ = zStart + i * zSpacing;
+                    
+                    if (isFlatRoof) {
+                        panel.position.set(0, surveyState.floors * 4.5 + 0.3, panelZ); // Flat on roof center
+                        panel.rotation.set(0, 0, 0); // Completely flat
+                        panel.scale.set(2.0, 2.0, 2.0);
+                        appliancesGroup.add(panel);
+                        placedObjects.solar.push(panel);
+                        console.log('      ☀️ Solar Panel ' + (i+1) + ' flat on roof at z=' + panelZ);
+                    } else {
+                        // Slanted gable roof
+                        const roofOverhang = 0.8;
+                        const roofW = houseWidthForAppliances + roofOverhang * 2;
+                        const roofPeak = 2.5;
+                        const slopeAngle = Math.atan2(roofPeak, roofW / 2);
+                        
+                        const panelX = roofW / 4; // Centered on the right slope
+                        const panelY = surveyState.floors * 4.5 + roofPeak / 2 + 0.2; 
+                        
+                        panel.position.set(panelX, panelY, panelZ);
+                        panel.rotation.set(0, 0, -slopeAngle); // Flush with right slope (Z-axis tilt)
+                        panel.scale.set(2.0, 2.0, 2.0);
+                        appliancesGroup.add(panel);
+                        placedObjects.solar.push(panel);
+                        console.log('      ☀️ Solar Panel aligned on right slope.');
+                    }
                 }
             }
 
@@ -5252,6 +5266,41 @@
                 placedObjects.pool.scale.set(1.5, 1.5, 1.5);  // 1.5X - reasonable size
                 appliancesGroup.add(placedObjects.pool);
                 console.log('      🏊 Pool at x=' + poolX.toFixed(2) + ', z=' + poolZ.toFixed(2) + ' (BACK of house - true backyard)');
+            }
+
+            // --- DYNAMIC PERIMETER COMPOUND WALL ---
+            if (!needsCutawayView) {
+                // Calculate max outer boundaries including Pool and Garage
+                const compWidth = houseWidthForAppliances + 28; 
+                const compDepth = houseDepthForAppliances + 22; 
+                const compCenterX = 3; // Shifted right to cover Garage/Pool
+                const compCenterZ = -4; // Shifted back to cover Pool
+                
+                const compoundMat = new THREE.MeshStandardMaterial({ color: 0xefefef, roughness: 0.95, metalness: 0.0 });
+                const wallHeight = 1.4;
+                const wallThick = 0.3;
+                
+                // Left Wall
+                const compLeft = new THREE.Mesh(new THREE.BoxGeometry(wallThick, wallHeight, compDepth), compoundMat);
+                compLeft.position.set(compCenterX - compWidth/2, wallHeight/2, compCenterZ);
+                appliancesGroup.add(compLeft);
+                
+                // Right Wall
+                const compRight = new THREE.Mesh(new THREE.BoxGeometry(wallThick, wallHeight, compDepth), compoundMat);
+                compRight.position.set(compCenterX + compWidth/2, wallHeight/2, compCenterZ);
+                appliancesGroup.add(compRight);
+                
+                // Back Wall
+                const compBack = new THREE.Mesh(new THREE.BoxGeometry(compWidth + wallThick, wallHeight, wallThick), compoundMat);
+                compBack.position.set(compCenterX, wallHeight/2, compCenterZ - compDepth/2);
+                appliancesGroup.add(compBack);
+                
+                // Front Side-yard connections to the Z=5 fence line
+                const compFrontLeft = new THREE.Mesh(new THREE.BoxGeometry(compWidth/2 - houseWidthForAppliances/2 - 0.5, wallHeight, wallThick), compoundMat);
+                compFrontLeft.position.set(compCenterX - compWidth/4 - houseWidthForAppliances/4, wallHeight/2, compCenterZ + compDepth/2);
+                appliancesGroup.add(compFrontLeft);
+                
+                console.log('      🧱 Protective Compound Wall Generated.');
             }
 
             // Entertainment devices (Q15) - TV, Computer, Game Console
