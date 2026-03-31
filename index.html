@@ -1052,7 +1052,7 @@
             kitchen: { pos: [3, 6, 2], lookAt: [0, 0.5, -1] },  // Was inside, now pulled back
             laundry: { pos: [-5, 5, 2], lookAt: [-2, 0.5, -1] },  // Pulled back and up
             solar: { pos: [0, 15, 3], lookAt: [0, 4, 0] },
-            ev: { pos: [-8, 5, 10], lookAt: [-2, 1, 2] },  // Show both garage AND house
+            ev: { pos: [22, 6, 12], lookAt: [7, 2, 4] },  // Show garage on right side AND house
             pool: { pos: [12, 6, -10], lookAt: [3, 1, -2] },  // Show both pool AND house
             entertainment: { pos: [8, 4, 6], lookAt: [2, 1, 0] },  // Wider cutaway view for living room
             overview: { pos: [12, 10, 12], lookAt: [0, 2, 0] },
@@ -4030,15 +4030,23 @@
 
             // Body
             const bodyGeometry = new THREE.BoxGeometry(1.5, 0.6, 3);
-            const bodyMaterial = new THREE.MeshLambertMaterial({ color: 0x228b22 });
+            const bodyMaterial = new THREE.MeshStandardMaterial({ color: 0x6b7280, roughness: 0.6, metalness: 0.4 }); // Tesla Silver
             const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
             body.position.y = 0.4;
             body.castShadow = true;
             group.add(body);
 
+            // Tesla red accent stripe on front bumper
+            const accentGeometry = new THREE.BoxGeometry(0.8, 0.08, 0.05);
+            const accentMaterial = new THREE.MeshStandardMaterial({ color: 0xcc0000, roughness: 0.3, metalness: 0.5 }); // Tesla Red
+            const accent = new THREE.Mesh(accentGeometry, accentMaterial);
+            accent.position.set(0, 0.35, 1.52);
+            accent.castShadow = true;
+            group.add(accent);
+
             // Cabin
             const cabinGeometry = new THREE.BoxGeometry(1.4, 0.5, 1.5);
-            const cabinMaterial = new THREE.MeshLambertMaterial({ color: 0x228b22 });
+            const cabinMaterial = new THREE.MeshStandardMaterial({ color: 0x6b7280, roughness: 0.6, metalness: 0.4 }); // Tesla Silver
             const cabin = new THREE.Mesh(cabinGeometry, cabinMaterial);
             cabin.position.set(0, 0.85, 0.3);
             cabin.castShadow = true;
@@ -4118,14 +4126,27 @@
             floor.receiveShadow = true;
             group.add(floor);
 
-            // Walls
-            const wallMaterial = new THREE.MeshLambertMaterial({ color: 0xcccccc });
+            // Walls - modern clean white
+            const wallMaterial = new THREE.MeshStandardMaterial({ color: 0xf0f0f0, roughness: 0.7, metalness: 0.0 });
 
             const backWallGeometry = new THREE.BoxGeometry(4, 3, 0.2);
             const backWall = new THREE.Mesh(backWallGeometry, wallMaterial);
             backWall.position.set(0, 1.5, -2.5);
             backWall.castShadow = true;
             group.add(backWall);
+
+            // Charging station light strip on back wall for ambiance
+            const lightStripGeometry = new THREE.BoxGeometry(3.5, 0.08, 0.02);
+            const lightStripMaterial = new THREE.MeshStandardMaterial({
+                color: 0x0044ff,
+                emissive: 0x0044ff,
+                emissiveIntensity: 0.6,
+                roughness: 0.3,
+                metalness: 0.5
+            });
+            const lightStrip = new THREE.Mesh(lightStripGeometry, lightStripMaterial);
+            lightStrip.position.set(0, 2.6, -2.45);
+            group.add(lightStrip);
 
             const leftWallGeometry = new THREE.BoxGeometry(0.2, 3, 5);
             const leftWall = new THREE.Mesh(leftWallGeometry, wallMaterial);
@@ -4138,29 +4159,43 @@
             rightWall.castShadow = true;
             group.add(rightWall);
 
-            // Roof
+            // Roof - lighter gray
             const roofGeometry = new THREE.BoxGeometry(4.2, 0.1, 5.2);
-            const roofMaterial = new THREE.MeshLambertMaterial({ color: 0x888888 });
+            const roofMaterial = new THREE.MeshStandardMaterial({ color: 0x9a9a9a, roughness: 0.7, metalness: 0.0 });
             const roof = new THREE.Mesh(roofGeometry, roofMaterial);
             roof.position.set(0, 3.05, 0);
             roof.castShadow = true;
             group.add(roof);
 
-            // Garage door
-            const doorGeometry = new THREE.BoxGeometry(3.5, 2.5, 0.1);
-            const doorMaterial = new THREE.MeshLambertMaterial({ color: 0x8b7355 });
-            const door = new THREE.Mesh(doorGeometry, doorMaterial);
-            door.position.set(0, 1.25, 2.5);
-            group.add(door);
+            // Garage door frame (open-front for visibility)
+            const doorFrameMat = new THREE.MeshStandardMaterial({ color: 0x333333, roughness: 0.4, metalness: 0.3 });
 
-            // Door panels (horizontal lines)
-            for (let i = 0; i < 5; i++) {
-                const panelGeometry = new THREE.BoxGeometry(3.4, 0.05, 0.02);
-                const panelMaterial = new THREE.MeshLambertMaterial({ color: 0x664422 });
-                const panel = new THREE.Mesh(panelGeometry, panelMaterial);
-                panel.position.set(0, 0.5 + i * 0.5, 2.51);
-                group.add(panel);
-            }
+            // Top door frame
+            const topFrame = new THREE.Mesh(
+                new THREE.BoxGeometry(3.8, 0.15, 0.1),
+                doorFrameMat
+            );
+            topFrame.position.set(0, 2.6, 2.5);
+            topFrame.castShadow = true;
+            group.add(topFrame);
+
+            // Left door frame
+            const leftFrame = new THREE.Mesh(
+                new THREE.BoxGeometry(0.1, 2.5, 0.1),
+                doorFrameMat
+            );
+            leftFrame.position.set(-1.9, 1.25, 2.5);
+            leftFrame.castShadow = true;
+            group.add(leftFrame);
+
+            // Right door frame
+            const rightFrame = new THREE.Mesh(
+                new THREE.BoxGeometry(0.1, 2.5, 0.1),
+                doorFrameMat
+            );
+            rightFrame.position.set(1.9, 1.25, 2.5);
+            rightFrame.castShadow = true;
+            group.add(rightFrame);
 
             return group;
         }
@@ -4233,20 +4268,24 @@
             basin.position.y = -0.75;
             group.add(basin);
 
-            // Water - Deep Blue, PBR
+            // Water - Bright Cyan, fully visible
             const water = new THREE.Mesh(
                 new THREE.BoxGeometry(4.2, 1.35, 6.2),
                 new THREE.MeshStandardMaterial({
-                    color: 0x004488,
+                    color: 0x00e5ff,                    // Bright cyan
                     transparent: true,
-                    opacity: 0.7,
-                    metalness: 0.9,
-                    roughness: 0.05,
-                    envMapIntensity: 1.0
+                    opacity: 1.0,                       // Fully opaque
+                    metalness: 0.3,                     // Lower metalness for water look
+                    roughness: 0.4,                     // More diffuse surface
+                    emissive: 0x00aaff,                 // Stronger blue glow
+                    emissiveIntensity: 0.3,             // Brighter glow for visibility
+                    envMapIntensity: 0.8
                 })
             );
-            water.position.y = -0.15;
-            water.userData.isWater = true; // For animation hook
+            water.position.y = -0.1;
+            water.userData.isWater = true;
+            water.castShadow = true;
+            water.receiveShadow = true;
             group.add(water);
 
             // Wooden Deck (Rim)
@@ -5013,31 +5052,34 @@
                 }
             }
 
-            // EV and garage - OUTSIDE the house on the LEFT side
+            // EV and garage - RIGHT side of house, aligned with driveway
             if (answers.Q13 === 'yes') {
-                console.log('   🚗 Creating EV Garage, Car, and Charger - OUTSIDE HOUSE');
+                console.log('   🚗 Creating EV Garage, Car, and Charger - RIGHT SIDE');
 
-                // Position garage OUTSIDE on the left (negative X, beyond house boundary)
-                const garageX = -houseWidth / 2 - 8;  // LEFT side, well outside house
-                const garageZ = 5;  // Front area, visible
+                // Position garage on the RIGHT side with small gap
+                const garageScale = 2.0;                          // smaller than house
+                const garageHalfW = 2 * garageScale;              // = 4 (garage geo half-width × scale)
+                const garageGap = 2;                              // small gap between house and garage
+                const garageX = houseWidth / 2 + garageGap + garageHalfW;  // e.g. 7.5+2+4 = 13.5
+                const garageZ = houseDepth / 2 - (2.5 * garageScale);     // align front with house front
 
                 placedObjects.garage = createGarage();
                 placedObjects.garage.position.set(garageX, 1.0, garageZ);
-                placedObjects.garage.scale.set(2.5, 2.5, 2.5);  // 2.5X scale
+                placedObjects.garage.scale.set(garageScale, garageScale, garageScale);
                 appliancesGroup.add(placedObjects.garage);
-                console.log('      🏠 Garage at x=' + garageX.toFixed(2) + ', z=' + garageZ.toFixed(2) + ' (LEFT of house)');
+                console.log('      🏠 Garage at x=' + garageX.toFixed(2) + ', z=' + garageZ.toFixed(2) + ' (RIGHT of house, scale=' + garageScale + ')');
 
                 placedObjects.ev = createEV();
-                placedObjects.ev.position.set(garageX, 1.2, garageZ);  // Inside garage
-                placedObjects.ev.scale.set(2.5, 2.5, 2.5);  // 2.5X scale
+                placedObjects.ev.position.set(garageX, 1.0, garageZ + 2.5);  // Forward in garage, near entrance
+                placedObjects.ev.scale.set(garageScale, garageScale, garageScale);
                 appliancesGroup.add(placedObjects.ev);
-                console.log('      🚗 EV Car inside garage');
+                console.log('      🚗 Tesla EV visible inside garage (silver color, near entrance)');
 
                 placedObjects.charger = createEVCharger();
-                placedObjects.charger.position.set(garageX + 2, 0.8, garageZ - 1.5);
-                placedObjects.charger.scale.set(1.2, 1.2, 1.2);  // Prototype scale
+                placedObjects.charger.position.set(garageX - 1.5, 0.8, garageZ - 3.5);  // Back wall, visible from entrance
+                placedObjects.charger.scale.set(1.5, 1.5, 1.5);
                 appliancesGroup.add(placedObjects.charger);
-                console.log('      🔌 EV Charger (prototype) next to garage');
+                console.log('      🔌 EV Charger mounted on back wall inside garage');
             }
 
             // Pool - OUTSIDE the house in the BACK area (negative Z - true backyard)
