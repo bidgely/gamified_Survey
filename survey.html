@@ -5027,10 +5027,10 @@
             if (answers.Q7 && answers.Q7.includes('centralAC')) {
                 console.log('   ❄️ Creating 3D Central AC Unit');
                 placedObjects.centralAC = createCentralAC();
-                // Place OUTSIDE house at back (negative Z), on the ground
+                // Place OUTSIDE house at back, directly behind the right-side bedroom
                 const acTargetY = 0.5;
-                const acX = -houseWidthForAppliances * 0.3;  // Scale with house width
-                const acZ = -houseDepthForAppliances / 2 - 2;  // Scale with house depth
+                const acX = houseWidthForAppliances / 2 - 2.5;  // Right side of house, far from bathroom
+                const acZ = -houseDepthForAppliances / 2 - 1.5;  // Hugging back wall
                 placedObjects.centralAC.position.set(acX, acTargetY + 5, acZ);  // Start 5 units above
                 placedObjects.centralAC.rotation.y = 0;  // Facing forward (toward house)
                 placedObjects.centralAC.scale.set(0, 0, 0);  // Start invisible
@@ -5045,10 +5045,11 @@
             if (answers.Q7 && answers.Q7.includes('centralCooling')) {
                 console.log('   ❄️ Creating 3D Central Cooling System');
                 placedObjects.centralCooling = createCentralCooling();
-                // Place OUTSIDE house at back (negative Z), next to AC unit
+                // Place OUTSIDE house at back, next to AC unit behind right-side bedroom
                 const coolTargetY = 0.5;
-                const coolZ = -houseDepthForAppliances / 2 - 2;  // Scale with house depth
-                placedObjects.centralCooling.position.set(0, coolTargetY + 5, coolZ);  // Start 5 units above
+                const coolZ = -houseDepthForAppliances / 2 - 1.5;  // Hugging back wall
+                const coolX = houseWidthForAppliances / 2 - 4.5; // Next to AC (moving towards center)
+                placedObjects.centralCooling.position.set(coolX, coolTargetY + 5, coolZ);  // Start 5 units above
                 placedObjects.centralCooling.rotation.y = 0;
                 placedObjects.centralCooling.scale.set(0, 0, 0);  // Start invisible
                 if (!previouslyPlacedAppliances.has('centralCooling')) {
