@@ -4184,89 +4184,96 @@
         function createEV() {
             const group = new THREE.Group();
 
-            // Body
-            const bodyGeometry = new THREE.BoxGeometry(1.5, 0.6, 3);
-            const bodyMaterial = new THREE.MeshStandardMaterial({ color: 0x6b7280, roughness: 0.6, metalness: 0.4 }); // Tesla Silver
-            const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
-            body.position.y = 0.4;
-            body.castShadow = true;
-            group.add(body);
+            // Materials
+            const bodyColor = 0xcc0000; // Sports Red
+            const glassColor = 0x111111; 
+            const bodyMat = new THREE.MeshStandardMaterial({ 
+                color: bodyColor, 
+                roughness: 0.2, 
+                metalness: 0.8,
+                envMapIntensity: 1.0
+            });
+            const glassMat = new THREE.MeshStandardMaterial({ 
+                color: glassColor, 
+                transparent: true, 
+                opacity: 0.7, 
+                roughness: 0.1, 
+                metalness: 1.0 
+            });
 
-            // Tesla red accent stripe on front bumper
-            const accentGeometry = new THREE.BoxGeometry(0.8, 0.08, 0.05);
-            const accentMaterial = new THREE.MeshStandardMaterial({ color: 0xcc0000, roughness: 0.3, metalness: 0.5 }); // Tesla Red
-            const accent = new THREE.Mesh(accentGeometry, accentMaterial);
-            accent.position.set(0, 0.35, 1.52);
-            accent.castShadow = true;
-            group.add(accent);
+            // Lower Body (Chassis) - aerodynamic wedge shape
+            const chassisGeo = new THREE.BoxGeometry(1.6, 0.4, 3.2);
+            const chassis = new THREE.Mesh(chassisGeo, bodyMat);
+            chassis.position.y = 0.35;
+            chassis.castShadow = true;
+            group.add(chassis);
 
-            // Cabin
-            const cabinGeometry = new THREE.BoxGeometry(1.4, 0.5, 1.5);
-            const cabinMaterial = new THREE.MeshStandardMaterial({ color: 0x6b7280, roughness: 0.6, metalness: 0.4 }); // Tesla Silver
-            const cabin = new THREE.Mesh(cabinGeometry, cabinMaterial);
-            cabin.position.set(0, 0.85, 0.3);
+            // Upper Body (Cabin) - sleeker, more sloped
+            const cabinGeo = new THREE.BoxGeometry(1.4, 0.45, 1.8);
+            const cabin = new THREE.Mesh(cabinGeo, bodyMat);
+            cabin.position.set(0, 0.7, -0.2); // Shifted back for sports look
             cabin.castShadow = true;
             group.add(cabin);
 
-            // Windshield
-            const windshieldGeometry = new THREE.BoxGeometry(1.3, 0.4, 0.05);
-            const windshieldMaterial = new THREE.MeshLambertMaterial({
-                color: 0x88ccff,
-                transparent: true,
-                opacity: 0.5
-            });
-            const windshield = new THREE.Mesh(windshieldGeometry, windshieldMaterial);
-            windshield.position.set(0, 0.85, 1.05);
-            windshield.rotation.x = -0.2;
-            group.add(windshield);
+            // Hood Slope
+            const hoodGeo = new THREE.BoxGeometry(1.4, 0.1, 1.2);
+            const hood = new THREE.Mesh(hoodGeo, bodyMat);
+            hood.position.set(0, 0.5, 1.0);
+            hood.rotation.x = 0.2;
+            group.add(hood);
 
-            // Rear window
-            const rearWindow = new THREE.Mesh(windshieldGeometry, windshieldMaterial);
-            rearWindow.position.set(0, 0.85, -0.45);
-            rearWindow.rotation.x = 0.2;
-            group.add(rearWindow);
+            // Spoiler (Sports Character)
+            const spoilerPostGeo = new THREE.BoxGeometry(0.1, 0.2, 0.1);
+            const leftPost = new THREE.Mesh(spoilerPostGeo, bodyMat);
+            leftPost.position.set(-0.6, 0.65, -1.4);
+            group.add(leftPost);
+            const rightPost = leftPost.clone();
+            rightPost.position.set(0.6, 0.65, -1.4);
+            group.add(rightPost);
 
-            // Wheels
-            const wheelPositions = [[-0.6, 0, -1], [0.6, 0, -1], [-0.6, 0, 1], [0.6, 0, 1]];
+            const wingGeo = new THREE.BoxGeometry(1.7, 0.05, 0.4);
+            const wing = new THREE.Mesh(wingGeo, bodyMat);
+            wing.position.set(0, 0.75, -1.4);
+            wing.rotation.x = 0.05;
+            group.add(wing);
+
+            // Windows
+            const windShield = new THREE.Mesh(new THREE.BoxGeometry(1.3, 0.45, 0.05), glassMat);
+            windShield.position.set(0, 0.78, 0.65);
+            windShield.rotation.x = -0.55;
+            group.add(windShield);
+
+            // Wheels - Larger, high-performance rims
+            const wheelPositions = [[-0.7, 0.25, -1], [0.7, 0.25, -1], [-0.7, 0.25, 1.1], [0.7, 0.25, 1.1]];
             wheelPositions.forEach(pos => {
-                const wheelGeometry = new THREE.CylinderGeometry(0.25, 0.25, 0.2, 32);
-                const wheelMaterial = new THREE.MeshLambertMaterial({ color: 0x111111 });
-                const wheel = new THREE.Mesh(wheelGeometry, wheelMaterial);
-                wheel.rotation.z = Math.PI / 2;
-                wheel.position.set(...pos);
-                group.add(wheel);
+                const wheelGroup = new THREE.Group();
+                const tyre = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.32, 0.32, 0.25, 32),
+                    new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.9 })
+                );
+                tyre.rotation.z = Math.PI/2;
+                wheelGroup.add(tyre);
 
-                // Rim
-                const rimGeometry = new THREE.CylinderGeometry(0.15, 0.15, 0.21, 32);
-                const rimMaterial = new THREE.MeshLambertMaterial({ color: 0xc0c0c0 });
-                const rim = new THREE.Mesh(rimGeometry, rimMaterial);
-                rim.rotation.z = Math.PI / 2;
-                rim.position.set(...pos);
-                group.add(rim);
+                const rim = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.2, 0.2, 0.26, 32),
+                    new THREE.MeshStandardMaterial({ color: 0x222222, metalness: 0.9, roughness: 0.1 })
+                );
+                rim.rotation.z = Math.PI/2;
+                wheelGroup.add(rim);
+
+                wheelGroup.position.set(...pos);
+                group.add(wheelGroup);
             });
 
-            // Headlights
-            const headlightGeometry = new THREE.CircleGeometry(0.1, 32);
-            const headlightMaterial = new THREE.MeshLambertMaterial({
-                color: 0xffff00,
-                emissive: 0xffff00,
-                emissiveIntensity: 0.5
-            });
-            const headlight1 = new THREE.Mesh(headlightGeometry, headlightMaterial);
-            headlight1.position.set(-0.5, 0.5, 1.51);
-            group.add(headlight1);
-
-            const headlight2 = new THREE.Mesh(headlightGeometry, headlightMaterial);
-            headlight2.position.set(0.5, 0.5, 1.51);
-            group.add(headlight2);
-
-            // Charge port
-            const portGeometry = new THREE.CircleGeometry(0.08, 32);
-            const portMaterial = new THREE.MeshLambertMaterial({ color: 0x00ff00 });
-            const port = new THREE.Mesh(portGeometry, portMaterial);
-            port.position.set(-0.76, 0.5, 0.5);
-            port.rotation.y = -Math.PI / 2;
-            group.add(port);
+            // Headlights - aggressive thin LEDs
+            const lightGeo = new THREE.BoxGeometry(0.4, 0.05, 0.1);
+            const lightMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 1.0 });
+            const L1 = new THREE.Mesh(lightGeo, lightMat);
+            L1.position.set(-0.5, 0.45, 1.6);
+            group.add(L1);
+            const L2 = L1.clone();
+            L2.position.set(0.5, 0.45, 1.6);
+            group.add(L2);
 
             return group;
         }
@@ -4275,45 +4282,71 @@
             const group = new THREE.Group();
 
             // Floor
-            const floorGeometry = new THREE.BoxGeometry(4, 0.1, 5);
-            const floorMaterial = new THREE.MeshLambertMaterial({ color: 0x666666 });
+            const floorGeometry = new THREE.BoxGeometry(4.2, 0.1, 5.2);
+            const floorMaterial = new THREE.MeshLambertMaterial({ color: 0x555555 });
             const floor = new THREE.Mesh(floorGeometry, floorMaterial);
-            floor.castShadow = true;
             floor.receiveShadow = true;
             group.add(floor);
 
-            // Walls - modern clean white
-            const wallMaterial = new THREE.MeshStandardMaterial({ color: 0xf0f0f0, roughness: 0.7, metalness: 0.0 });
+            // Walls - Suburban character with siding
+            const coreWallMat = new THREE.MeshStandardMaterial({ color: 0xf0f0f0, roughness: 0.8 });
+            const sidingMat = new THREE.MeshStandardMaterial({ color: 0xdddddd, roughness: 0.9 });
+            const trimMat = new THREE.MeshStandardMaterial({ color: 0x333333, metalness: 0.2, roughness: 0.5 });
 
-            const backWallGeometry = new THREE.BoxGeometry(4, 3, 0.2);
-            const backWall = new THREE.Mesh(backWallGeometry, wallMaterial);
+            const createTexturedWall = (w, h, d, isSide = false) => {
+                const wallGroup = new THREE.Group();
+                // Base structure
+                const base = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), coreWallMat);
+                wallGroup.add(base);
+
+                // Add horizontal siding planks
+                const plankCount = 12;
+                const plankH = h / plankCount;
+                for (let i = 0; i < plankCount; i++) {
+                    const plank = new THREE.Mesh(
+                        new THREE.BoxGeometry(w + 0.05, plankH * 0.8, d + 0.05),
+                        sidingMat
+                    );
+                    plank.position.y = -h/2 + (i * plankH) + plankH/2;
+                    wallGroup.add(plank);
+                }
+                return wallGroup;
+            };
+
+            const backWall = createTexturedWall(4, 3, 0.2);
             backWall.position.set(0, 1.5, -2.5);
-            backWall.castShadow = true;
             group.add(backWall);
 
-            // Charging station light strip on back wall for ambiance
-            const lightStripGeometry = new THREE.BoxGeometry(3.5, 0.08, 0.02);
-            const lightStripMaterial = new THREE.MeshStandardMaterial({
-                color: 0x0044ff,
-                emissive: 0x0044ff,
-                emissiveIntensity: 0.6,
-                roughness: 0.3,
-                metalness: 0.5
-            });
-            const lightStrip = new THREE.Mesh(lightStripGeometry, lightStripMaterial);
-            lightStrip.position.set(0, 2.6, -2.45);
-            group.add(lightStrip);
-
-            const leftWallGeometry = new THREE.BoxGeometry(0.2, 3, 5);
-            const leftWall = new THREE.Mesh(leftWallGeometry, wallMaterial);
+            const leftWall = createTexturedWall(0.2, 3, 5, true);
             leftWall.position.set(-2, 1.5, 0);
-            leftWall.castShadow = true;
             group.add(leftWall);
 
-            const rightWall = new THREE.Mesh(leftWallGeometry, wallMaterial);
+            const rightWall = createTexturedWall(0.2, 3, 5, true);
             rightWall.position.set(2, 1.5, 0);
-            rightWall.castShadow = true;
             group.add(rightWall);
+
+            // Interior Character: WorkBench & Shelving
+            const bench = new THREE.Mesh(new THREE.BoxGeometry(2.5, 0.1, 0.8), trimMat);
+            bench.position.set(0, 0.9, -2.1);
+            group.add(bench);
+            const leg1 = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.9, 0.1), trimMat);
+            leg1.position.set(-1.1, 0.45, -1.8);
+            group.add(leg1);
+            const leg2 = leg1.clone();
+            leg2.position.set(1.1, 0.45, -1.8);
+            group.add(leg2);
+
+            // Shelves on left wall
+            for (let i = 0; i < 3; i++) {
+                const shelf = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.05, 3), trimMat);
+                shelf.position.set(-1.85, 1.2 + i * 0.6, 0);
+                group.add(shelf);
+            }
+
+            // Warm interior light for that Suburban vibe
+            const orangeLight = new THREE.PointLight(0xffaa00, 0.5, 6);
+            orangeLight.position.set(0, 2.5, 0);
+            group.add(orangeLight);
 
             // Roof removed for open-air modern carport design as requested.
 
@@ -5269,37 +5302,44 @@
             }
 
             // --- DYNAMIC PERIMETER COMPOUND WALL ---
-            if (!needsCutawayView) {
-                // Calculate max outer boundaries including Pool and Garage
-                const compWidth = houseWidthForAppliances + 28; 
-                const compDepth = houseDepthForAppliances + 22; 
-                const compCenterX = 3; // Shifted right to cover Garage/Pool
-                const compCenterZ = -4; // Shifted back to cover Pool
+            // Persistent Compound: Always visible, but calculates bounds based on answers or defaults
+            const renderCompound = () => {
+                const houseW = houseWidthForAppliances || 10;
+                const houseD = houseDepthForAppliances || 12;
+                
+                const compWidth = houseW + 28; 
+                const compDepth = houseD + 22; 
+                const compCenterX = 3; 
+                const compCenterZ = -4; 
                 
                 const compoundMat = new THREE.MeshStandardMaterial({ color: 0xefefef, roughness: 0.95, metalness: 0.0 });
-                const wallHeight = 1.4;
-                const wallThick = 0.3;
+                const wallHeight = 1.6;
+                const wallThick = 0.4;
                 
-                // Left Wall
+                // Left
                 const compLeft = new THREE.Mesh(new THREE.BoxGeometry(wallThick, wallHeight, compDepth), compoundMat);
                 compLeft.position.set(compCenterX - compWidth/2, wallHeight/2, compCenterZ);
                 appliancesGroup.add(compLeft);
                 
-                // Right Wall
+                // Right
                 const compRight = new THREE.Mesh(new THREE.BoxGeometry(wallThick, wallHeight, compDepth), compoundMat);
                 compRight.position.set(compCenterX + compWidth/2, wallHeight/2, compCenterZ);
                 appliancesGroup.add(compRight);
                 
-                // Back Wall
-                const compBack = new THREE.Mesh(new THREE.BoxGeometry(compWidth + wallThick, wallHeight, wallThick), compoundMat);
+                // Back
+                const compBack = new THREE.Mesh(new THREE.BoxGeometry(compWidth, wallHeight, wallThick), compoundMat);
                 compBack.position.set(compCenterX, wallHeight/2, compCenterZ - compDepth/2);
                 appliancesGroup.add(compBack);
                 
-                // Front Side-yard connections to the Z=5 fence line
-                const compFrontLeft = new THREE.Mesh(new THREE.BoxGeometry(compWidth/2 - houseWidthForAppliances/2 - 0.5, wallHeight, wallThick), compoundMat);
-                compFrontLeft.position.set(compCenterX - compWidth/4 - houseWidthForAppliances/4, wallHeight/2, compCenterZ + compDepth/2);
+                // Frontyard extensions
+                const extW = compWidth/2 - houseW/2 - 0.5;
+                const compFrontLeft = new THREE.Mesh(new THREE.BoxGeometry(extW, wallHeight, wallThick), compoundMat);
+                compFrontLeft.position.set(compCenterX - compWidth/2 + extW/2, wallHeight/2, compCenterZ + compDepth/2);
                 appliancesGroup.add(compFrontLeft);
-                
+            };
+
+            if (!needsCutawayView) {
+                renderCompound();
                 console.log('      🧱 Protective Compound Wall Generated.');
             }
 
@@ -5772,16 +5812,19 @@
             if (pb) pb.style.width = progress + '%';
             if (pt) pt.textContent = `Q${surveyState.currentQuestionIndex + 1} of ${surveyQuestions.length}`;
 
-            // Gamification: Show Mascot tooltip
+            // Gamification: Show Mascot tooltip (only on question transitions, not in-place re-renders)
             const speech = document.getElementById('mascotSpeech');
             const mascotObj = document.getElementById('mascotImage');
             if (speech && mascotObj) {
-                speech.classList.remove('visible');
                 mascotObj.classList.add('visible');
-                setTimeout(() => {
-                    speech.textContent = question.tooltip || "Let's keep going!";
-                    speech.classList.add('visible');
-                }, 300);
+                if (direction !== null) {
+                    // Only reset speech bubble on actual question transitions
+                    speech.classList.remove('visible');
+                    setTimeout(() => {
+                        speech.textContent = question.tooltip || "Let's keep going!";
+                        speech.classList.add('visible');
+                    }, 300);
+                }
             }
 
             const inject = () => {
@@ -5841,6 +5884,98 @@
             inject();
         }
 
+        const humorousFeedback = {
+            Q1: {
+                SingleFamily: "A house! Plenty of room for activities... and maybe a disco ball? 🕺",
+                Apartment: "Apartment life? Efficient and cozy. Just don't start a rock band! 🎸",
+                Townhouse: "Townhouse crew! Best of both worlds — neighbors AND your own front door! 🏘️",
+                Condo: "Condo style! High class and low maintenance. I like your style! ✨"
+            },
+            Q2: {
+                yes: "Homeowner! You're the king of your castle. Time to optimize that throne room! 👑",
+                no: "Renting smart! Let's find energy wins that don't need a landlord's permission! 📋"
+            },
+            Q4: {
+                1: "One bedroom — cozy and efficient! Less to heat, more to love! 🛏️",
+                2: "Two bedrooms! A guest room or a secret lab? I won't judge! 🔬",
+                3: "Three bedrooms! That's a lot of pillows to fluff! 🛋️",
+                4: "Four-plus bedrooms?! Are you running a hotel or just living large? 🏨"
+            },
+            Q5: {
+                1: "Solo living! All the hot water is yours. No sharing required! 🚿",
+                2: "Dynamic duo! Twice the people, twice the fun... and twice the energy! ⚡",
+                3: "Party of three! Things are getting interesting energy-wise! 🎉",
+                4: "Family of four! That's a full squad. Let's keep your bills in check! 💪",
+                5: "Five-plus? That's a whole team! You could power a small village! 🏘️"
+            },
+            Q6: {
+                heating: "Central furnace! The classic warm hug for your whole house! 🔥",
+                heatPump: "Heat Pump! You're basically living in the future. Super cool! (Or warm!) ❄️🔥",
+                radiatorsHeater: "Baseboard heaters! Quiet and steady — the tortoise of the heating world! 🐢",
+                none: "No heating? You must be tough as nails... or live somewhere tropical! 🌴"
+            },
+            Q7: {
+                centralAC: "Central AC! The whole house stays frosty. Bob approves! ❄️👍",
+                centralCooling: "Evaporative cooling! Using nature's trick — very clever! 🌬️💧",
+                none: "No cooling? You're either very brave or have amazing cross-breezes! 🍃"
+            },
+            Q8: {
+                electric: "Electric water heater! Zapping your water warm, one electron at a time! ⚡💧",
+                gas: "Gas water heater! Quick and toasty showers guaranteed! 🔥🚿",
+                none: "No water heater? Cold showers build character... so I've heard! 🥶"
+            },
+            Q9: {
+                yes: "Smart thermostat! Your house is basically a genius now! 🧠📱",
+                no: "Manual thermostat — old school cool! Sometimes simple just works! 🎛️"
+            },
+            Q10: {
+                electricStove: "Electric stove! Clean cooking with the power of electrons! ⚡🍳",
+                gasStove: "Gas stove! Chef's kiss! Just watch those blue flames! 👨‍🍳🔥",
+                electricOven: "Electric oven! Perfectly even baking — your cookies will thank you! 🍪",
+                gasOven: "Gas oven! Old faithful. Great for roasting and Bob's favorite pizza! 🍕",
+                fridge: "Fridge! The unsung hero running 24/7 to keep your snacks cold! 🧊🍕"
+            },
+            Q11: {
+                washingmachine: "Washing machine! Pro tip: cold water washes save a ton of energy! 🫧",
+                dryer: "Dryer! Tumble, tumble, tumble... that's energy spinning around! 💨",
+                dishwasher: "Dishwasher! Laziness meets efficiency — my kind of appliance! 🍽️✨",
+                none: "No laundry machines? Laundromat adventures or hand-wash champion? 🧤"
+            },
+            Q12: {
+                yes: "Solar panels! You're basically a power plant now. Can I borrow some charge? ☀️🔌",
+                no: "No solar yet? No worries, I'll keep the sun shining for when you're ready! ☁️☀️"
+            },
+            Q13: {
+                yes: "An EV! You're basically a superhero. Speed and sustainability! 🏎️💨",
+                no: "No EV yet? Taking the scenic route is great for the calves! 🚶‍♂️"
+            },
+            Q14: {
+                yes: "A pool! Cannonball! Just remember, that pump loves electricity! 🏊💦",
+                no: "No pool? More money for energy upgrades... or a really big bathtub! 🛁"
+            },
+            Q15: {
+                tv: "Television! Movie nights are essential. Just unplug when not binge-watching! 📺🍿",
+                computer: "Computer! Whether it's work or cat videos, it's all important! 💻🐱",
+                gameConsole: "Game console! Achievement unlocked: Energy Survey Participant! 🎮🏆",
+                none: "No entertainment devices? You must be a book person. Respect! 📚"
+            }
+        };
+
+        function showMascotFeedback(text) {
+            const speech = document.getElementById('mascotSpeech');
+            const mascotObj = document.getElementById('mascotImage');
+            if (speech && mascotObj) {
+                speech.classList.remove('visible');
+                setTimeout(() => {
+                    speech.textContent = text;
+                    speech.classList.add('visible');
+                    // Add a tiny bounce effect to Bob
+                    mascotObj.style.transform = 'scale(1.1) rotate(5deg)';
+                    setTimeout(() => mascotObj.style.transform = 'scale(1) rotate(0deg)', 200);
+                }, 100);
+            }
+        }
+
         function updateRoomLabel(roomLabel) {
             const label = document.getElementById('roomLabel');
             label.querySelector('.room-emoji').textContent = roomLabel.emoji;
@@ -5886,6 +6021,20 @@
             if (questionId === 'Q1') {
                 surveyState.dwellingType = value;
                 console.log('   ➜ Dwelling type set to:', value);
+            }
+
+            // Humorous Gamification Feedback
+            if (humorousFeedback[questionId] && humorousFeedback[questionId][value]) {
+                showMascotFeedback(humorousFeedback[questionId][value]);
+            } else {
+                // Generic positive reinforcement if no specific humorous feedback
+                const generic = [
+                    "Nice choice! You're making progress! 🚀",
+                    "Wow! You're an energy expert in the making! 🎓",
+                    "I love that answer! Let's keep going! ✨",
+                    "Great! Your energy profile is looking sharper than my hammer! 🔨"
+                ];
+                showMascotFeedback(generic[Math.floor(Math.random() * generic.length)]);
             }
             if (questionId === 'Q4') {
                 // Handle bedroom count including "4+" option
