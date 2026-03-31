@@ -1042,29 +1042,29 @@
         // Camera positions for each question topic
         // Room-specific views are dynamically updated in updateScene when room positions are known
         const cameraViews = {
-            dwelling: { pos: [10, 7, 10], lookAt: [0, 3, 0] },  // Look higher to frame roof
-            bedrooms: { pos: [0, 12, 2], lookAt: [0, 0.5, 1] },
-            occupants: { pos: [8, 5, 8], lookAt: [0, 1, 0] },
-            heating: { pos: [8, 7, 8], lookAt: [0, 1.5, 0] },  // Pulled back and up
-            cooling: { pos: [-6, 6, 4], lookAt: [-1, 1, -2] },  // Pulled back and up
-            waterheating: { pos: [-5, 5, 3], lookAt: [-2, 0.5, -1] },  // Pulled back and up
-            thermostat: { pos: [5, 5, 3], lookAt: [2, 1, -1] },  // Pulled back and up
-            kitchen: { pos: [3, 6, 2], lookAt: [0, 0.5, -1] },  // Was inside, now pulled back
-            laundry: { pos: [-5, 5, 2], lookAt: [-2, 0.5, -1] },  // Pulled back and up
-            solar: { pos: [0, 15, 3], lookAt: [0, 4, 0] },
-            ev: { pos: [22, 6, 12], lookAt: [7, 2, 4] },  // Show garage on right side AND house
-            pool: { pos: [12, 6, -10], lookAt: [3, 1, -2] },  // Show both pool AND house
-            entertainment: { pos: [8, 4, 6], lookAt: [2, 1, 0] },  // Wider cutaway view for living room
-            overview: { pos: [12, 10, 12], lookAt: [0, 2, 0] },
+            dwelling: { pos: [14, 9, 14], lookAt: [0, 3, 0] },  // Look higher to frame roof
+            bedrooms: { pos: [0, 15, 3], lookAt: [0, 0.5, 1] },
+            occupants: { pos: [11, 6, 11], lookAt: [0, 1, 0] },
+            heating: { pos: [11, 9, 11], lookAt: [0, 1.5, 0] },  // Pulled back and up
+            cooling: { pos: [-8, 7, 5], lookAt: [-1, 1, -2] },  // Pulled back and up
+            waterheating: { pos: [-7, 6, 4], lookAt: [-2, 0.5, -1] },  // Pulled back and up
+            thermostat: { pos: [7, 6, 4], lookAt: [2, 1, -1] },  // Pulled back and up
+            kitchen: { pos: [4, 7, 3], lookAt: [0, 0.5, -1] },  // Was inside, now pulled back
+            laundry: { pos: [-7, 6, 3], lookAt: [-2, 0.5, -1] },  // Pulled back and up
+            solar: { pos: [0, 18, 4], lookAt: [0, 4, 0] },
+            ev: { pos: [28, 7, 15], lookAt: [9, 2, 5] },  // Show garage on right side AND house
+            pool: { pos: [16, 7, -13], lookAt: [3, 1, -2] },  // Show both pool AND house
+            entertainment: { pos: [11, 5, 8], lookAt: [2, 1, 0] },  // Wider cutaway view for living room
+            overview: { pos: [16, 12, 16], lookAt: [0, 2, 0] },
             inside: { pos: [0, 2, 0], lookAt: [1, 0.5, -1] },
-            front: { pos: [0, 3, -7], lookAt: [0, 1, 0] },
-            side: { pos: [7, 3, 0], lookAt: [0, 1, 0] },
-            sideLeft: { pos: [-7, 3, 0], lookAt: [0, 1, 0] },
-            top: { pos: [0, 10, 0.1], lookAt: [0, 0, 0] },
-            bedroom: { pos: [0, 3, 4], lookAt: [0, 0.5, 1.5] },
-            bathroom: { pos: [-3, 2, -3], lookAt: [-2, 0.5, -1] },
-            livinghall: { pos: [3, 2, -3], lookAt: [2, 0.5, -1] },
-            terrace: { pos: [0, 4, -6], lookAt: [0, 1.5, 0] }
+            front: { pos: [0, 3, -9], lookAt: [0, 1, 0] },
+            side: { pos: [9, 3, 0], lookAt: [0, 1, 0] },
+            sideLeft: { pos: [-9, 3, 0], lookAt: [0, 1, 0] },
+            top: { pos: [0, 13, 0.1], lookAt: [0, 0, 0] },
+            bedroom: { pos: [0, 3, 5], lookAt: [0, 0.5, 1.5] },
+            bathroom: { pos: [-4, 2, -4], lookAt: [-2, 0.5, -1] },
+            livinghall: { pos: [4, 2, -4], lookAt: [2, 0.5, -1] },
+            terrace: { pos: [0, 5, -8], lookAt: [0, 1.5, 0] }
         };
 
         // Survey questions mapped to Bidgely schema
@@ -1505,21 +1505,21 @@
 
             // Driveway — runs from house right side toward road (positive Z) - improved material
             const driveway = new THREE.Mesh(
-                new THREE.PlaneGeometry(2.8, 6),
+                new THREE.PlaneGeometry(3.5, 8),
                 new THREE.MeshStandardMaterial({ color: 0x555555, roughness: 0.95, metalness: 0.0 })
             );
             driveway.rotation.x = -Math.PI / 2;
-            driveway.position.set(3, -0.09, 6);
+            driveway.position.set(4, -0.09, 8);
             driveway.receiveShadow = true;
             scene.add(driveway);
 
             // Front walkway — from house front porch toward the road - improved material
             const walkway = new THREE.Mesh(
-                new THREE.PlaneGeometry(1.0, 7),
+                new THREE.PlaneGeometry(1.2, 9),
                 new THREE.MeshStandardMaterial({ color: 0xc0b0a0, roughness: 0.8, metalness: 0.0 })
             );
             walkway.rotation.x = -Math.PI / 2;
-            walkway.position.set(1, -0.09, 5.5);
+            walkway.position.set(1.5, -0.09, 7.5);
             walkway.receiveShadow = true;
             scene.add(walkway);
 
@@ -1534,7 +1534,7 @@
                 new THREE.MeshStandardMaterial({ color: 0x6b4423, roughness: 0.8, metalness: 0.0 })
             );
             leftGarden.rotation.x = -Math.PI / 2;
-            leftGarden.position.set(-4, -0.10, 2);
+            leftGarden.position.set(-5.5, -0.10, 2.5);
             leftGarden.receiveShadow = true;
             scene.add(leftGarden);
 
@@ -1544,7 +1544,7 @@
                 new THREE.MeshStandardMaterial({ color: 0x6b4423, roughness: 0.8, metalness: 0.0 })
             );
             rightGarden.rotation.x = -Math.PI / 2;
-            rightGarden.position.set(4, -0.10, 2);
+            rightGarden.position.set(5.5, -0.10, 2.5);
             rightGarden.receiveShadow = true;
             scene.add(rightGarden);
 
@@ -2019,7 +2019,7 @@
 
             // ARCHITECTURAL PROTOTYPE SCALING - REDUCED BY 2X
             console.log('\n📐 CALCULATING BUILDING DIMENSIONS:');
-            const baseSize = 15; // SCALED 1.5X: 10 → 15
+            const baseSize = 20; // SCALED 2X: 10 → 20
             const livingArea = surveyState.livingArea || 1500;
 
             // Realistic proportions based on living area
@@ -5035,14 +5035,14 @@
             // Solar panels - On BACK of roof (don't block front view!)
             if (answers.Q12 === 'yes') {
                 console.log('   ☀️ Creating Solar Panels on BACK of ROOF - LARGE');
-                const roofY = surveyState.floors * 3 + 2.2;  // On top of roof
+                const roofY = surveyState.floors * 4.5 + 1.5;  // Correct: use floorHeight = 4.5
                 const panelCount = 3;  // 3 panels
                 for (let i = 0; i < panelCount; i++) {
                     const panel = createSolarPanel();
                     // Place on BACK of roof (negative Z) so they don't block front view
                     const xSpacing = 2.0;
                     const xStart = -(panelCount - 1) * xSpacing / 2;
-                    const backZ = -3.5;  // BACK of roof (don't block front view!)
+                    const backZ = -5.0;  // BACK of roof (deeper for bigger house)
                     panel.position.set(xStart + i * xSpacing, roofY, backZ);
                     panel.scale.set(2.0, 2.0, 2.0);  // 2.0X LARGER
                     panel.rotation.x = -Math.PI / 8;  // Slight tilt for realistic solar angle
