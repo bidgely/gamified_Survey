@@ -804,6 +804,86 @@
             .completion-title { font-size: 36px; }
             .completion-emoji { font-size: 72px; }
         }
+
+        /* --- Gamification Custom CSS --- */
+        .mascot-container {
+            position: absolute;
+            bottom: 20px;
+            right: 0px;
+            display: flex;
+            align-items: flex-end;
+            gap: 15px;
+            z-index: 50;
+            pointer-events: none;
+        }
+
+        .speech-bubble {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-accent);
+            padding: 12px 16px;
+            border-radius: 16px 16px 0 16px;
+            color: #fff;
+            font-size: 13px;
+            max-width: 200px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            opacity: 0;
+            transform: translateY(10px) scale(0.9);
+            transition: all 0.4s var(--spring);
+        }
+
+        .speech-bubble.visible {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        .mascot-image {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 2px solid var(--accent);
+            box-shadow: 0 0 15px var(--accent-glow);
+            object-fit: cover;
+            transform: translateY(20px);
+            opacity: 0;
+            transition: all 0.5s var(--spring);
+        }
+
+        .mascot-image.visible {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .mascot-image.celebrate {
+            animation: mascot-bounce 0.5s ease;
+        }
+
+        @keyframes mascot-bounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.15) translateY(-5px); }
+        }
+
+        /* Badge Enhancements */
+        .badge {
+            background: linear-gradient(135deg, rgba(96,165,250,0.15), rgba(16,185,129,0.15));
+            border: 1px solid rgba(96,165,250,0.4);
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-size: 15px;
+            color: #fff;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .badge.gold {
+            background: linear-gradient(135deg, rgba(251,191,36,0.2), rgba(245,158,11,0.2));
+            border-color: rgba(251,191,36,0.5);
+            color: #fbcfe8;
+            text-shadow: 0 0 10px rgba(251,191,36,0.5);
+        }
     </style>
 </head>
 <body>
@@ -837,6 +917,12 @@
             <div class="progress-text" id="progressText">Q1 of 15</div>
         </div>
         <div class="question-container" id="questionContainer"></div>
+        
+        <!-- Gamification Mascot -->
+        <div class="mascot-container" id="mascotContainer">
+            <div class="speech-bubble" id="mascotSpeech">Let's build your home!</div>
+            <img src="bob_the_builder.jpg" alt="Bob" class="mascot-image" id="mascotImage">
+        </div>
     </div>
 
     <div class="completion-screen" id="completionScreen">
@@ -1266,6 +1352,26 @@
                 ]
             }
         ];
+
+        // Inject Gamification Tooltips
+        const tooltips = [
+            "What kind of home do you have? This helps us size everything perfectly!",
+            "Renting or owning helps us recommend the right types of improvements.",
+            "Knowing your home size ensures we calculate your energy usage accurately.",
+            "More bedrooms usually mean more lighting and heating needs.",
+            "Occupants are the biggest factor in water and energy usage!",
+            "Heating is usually the #1 energy expense. Choose carefully!",
+            "Cooling your house takes a lot of energy. What do you use?",
+            "Water heating is often the 2nd largest energy expense.",
+            "Smart thermostats can save up to 10% on heating and cooling bills!",
+            "Cooking appliances are small but mighty energy users.",
+            "Washing in cold water saves tons of energy! What machines do you use?",
+            "Solar panels can completely offset your daytime energy usage!",
+            "Are you driving electric? EVs are super efficient!",
+            "Pool pumps run often. Do you have one?",
+            "Entertainment devices like TVs and Consoles use 'vampire power' even when off."
+        ];
+        surveyQuestions.forEach((q, i) => q.tooltip = tooltips[i]);
 
         // =================================================================
         // THREE.JS SCENE SETUP
@@ -1971,8 +2077,6 @@
         // =================================================================
 
         let previousPhase = 'structure';
-        let lastHouseConfig = null;  // Track house config to avoid unnecessary rebuilds
-        let lastSceneConfig = null;  // Track full scene config (answers + phase) to skip no-op rebuilds
 
         function getConstructionPhase(questionIndex) {
             // Default to 'structure' (solid exterior) if not initialized
@@ -2046,21 +2150,21 @@
                 wallColor = 0xc0c0c0; // Modern cool gray - contemporary urban apartment
                 roofStyle = 'flat';
                 buildingStyle = 'apartment';
-                floors = 3;  // Always 3 floors for apartments
+                floors = Math.max(3, Math.min(6, surveyState.bedrooms + 1));
                 console.log('   Type: APARTMENT');
                 console.log('   Wall Color: Modern Cool Gray (#c0c0c0)');
                 console.log('   Roof Style: FLAT');
-                console.log('   Floors: ' + floors + ' (always 3)');
+                console.log('   Floors: ' + floors + ' (min 3, scaled with bedrooms)');
                 console.log('   Features: Glass balconies on each floor with railings');
             } else if (dwellingType === 'Condo') {
                 wallColor = 0xe8c8a0; // Modern warm cream/tan - residential condo
                 roofStyle = 'flat';
                 buildingStyle = 'apartment';
-                floors = 3;  // Always 3 floors for condos
+                floors = Math.max(3, Math.min(6, surveyState.bedrooms + 1));
                 console.log('   Type: CONDOMINIUM');
                 console.log('   Wall Color: Modern Warm Cream (#e8c8a0)');
                 console.log('   Roof Style: FLAT');
-                console.log('   Floors: ' + floors + ' (always 3)');
+                console.log('   Floors: ' + floors + ' (min 3, scaled with bedrooms)');
                 console.log('   Features: Glass balconies on each floor with railings');
             } else if (dwellingType === 'Townhouse') {
                 wallColor = 0xc9a87c; // Warm beige/tan - townhouse style
@@ -2118,21 +2222,16 @@
                 houseGroup.add(floorMesh);
 
                 // Walls - make transparent when viewing bedrooms OR occupants
-                // For apartments: only top floor is transparent; lower floors stay opaque
-                const isTopFloor = (floor === floors - 1);
-                const isAptBuilding = (buildingStyle === 'apartment');
-                const thisFloorCutaway = needsCutawayView && (!isAptBuilding || isTopFloor);
-
                 const wallMaterial = new THREE.MeshStandardMaterial({
                     color: wallColor,
-                    transparent: thisFloorCutaway,
-                    opacity: thisFloorCutaway ? 0.15 : 1.0,
+                    transparent: needsCutawayView,
+                    opacity: needsCutawayView ? 0.15 : 1.0,
                     roughness: 0.7,
                     metalness: 0.0
                 });
 
                 // Base trim / wainscot strip at bottom of walls
-                if (floor === 0 && !thisFloorCutaway) {
+                if (floor === 0 && !needsCutawayView) {
                     const trimMat = new THREE.MeshStandardMaterial({ color: 0xd0c8b8, roughness: 0.6, metalness: 0.1 });
                     const trimH = 0.2;
                     // Front trim
@@ -2153,14 +2252,14 @@
                 const frontWallGeometry = new THREE.BoxGeometry(houseWidth, floorHeight, 0.2);
                 const frontWall = new THREE.Mesh(frontWallGeometry, wallMaterial);
                 frontWall.position.set(0, y + floorHeight / 2, houseDepth / 2);
-                frontWall.castShadow = !thisFloorCutaway;
+                frontWall.castShadow = !needsCutawayView;
                 frontWall.receiveShadow = true;
                 houseGroup.add(frontWall);
 
                 // Back wall
                 const backWall = new THREE.Mesh(frontWallGeometry, wallMaterial);
                 backWall.position.set(0, y + floorHeight / 2, -houseDepth / 2);
-                backWall.castShadow = !thisFloorCutaway;
+                backWall.castShadow = !needsCutawayView;
                 backWall.receiveShadow = true;
                 houseGroup.add(backWall);
 
@@ -2168,19 +2267,19 @@
                 const sideWallGeometry = new THREE.BoxGeometry(0.2, floorHeight, houseDepth);
                 const leftWall = new THREE.Mesh(sideWallGeometry, wallMaterial);
                 leftWall.position.set(-houseWidth / 2, y + floorHeight / 2, 0);
-                leftWall.castShadow = !thisFloorCutaway;
+                leftWall.castShadow = !needsCutawayView;
                 leftWall.receiveShadow = true;
                 houseGroup.add(leftWall);
 
                 // Right wall
                 const rightWall = new THREE.Mesh(sideWallGeometry, wallMaterial);
                 rightWall.position.set(houseWidth / 2, y + floorHeight / 2, 0);
-                rightWall.castShadow = !thisFloorCutaway;
+                rightWall.castShadow = !needsCutawayView;
                 rightWall.receiveShadow = true;
                 houseGroup.add(rightWall);
 
                 // Add vertical trim for depth and architectural detail
-                if (!thisFloorCutaway) {
+                if (!needsCutawayView) {
                     const verticalTrimMat = new THREE.MeshStandardMaterial({ color: 0xb8b0a0, roughness: 0.5, metalness: 0.15 });
                     const trimThickness = 0.12;
                     const trimHeight = floorHeight * 0.9;
@@ -2204,7 +2303,7 @@
                 }
 
                 // Add floor dividers for apartments (horizontal lines between floors)
-                if (buildingStyle === 'apartment' && !thisFloorCutaway && floor > 0) {
+                if (buildingStyle === 'apartment' && !needsCutawayView && floor > 0) {
                     const dividerMat = new THREE.MeshStandardMaterial({ color: 0x999999, roughness: 0.5, metalness: 0.2 });
                     const dividerThickness = 0.08;
 
@@ -2227,8 +2326,8 @@
                     houseGroup.add(backDivider);
                 }
 
-                // Windows - hide when viewing bedrooms or occupants (on cutaway floors)
-                if (!thisFloorCutaway) {
+                // Windows - hide when viewing bedrooms or occupants
+                if (!needsCutawayView) {
                     addWindows(floor, y + floorHeight / 2, floor < surveyState.bedrooms, houseWidth, houseDepth);
                     // Add window lighting for night effect
                     addWindowLights(floor, y + floorHeight / 2, houseWidth, houseDepth);
@@ -2281,8 +2380,6 @@
             // Store for use in appliance placement
             houseGroup.userData.houseWidth = houseWidth;
             houseGroup.userData.houseDepth = houseDepth;
-            houseGroup.userData.computedFloors = floors;
-            houseGroup.userData.floorHeight = floorHeight;
 
             console.log('\n✅ HOUSE CONSTRUCTION COMPLETE');
             console.log('   Final Dimensions: ' + houseWidth.toFixed(2) + 'W × ' + houseDepth.toFixed(2) + 'D × ' + totalHeight.toFixed(2) + 'H units');
@@ -4030,7 +4127,7 @@
                 group.add(line);
             }
 
-            // No default rotation — let placement code set the angle
+            group.rotation.x = -0.4;
             return group;
         }
 
@@ -4672,15 +4769,6 @@
         // =================================================================
 
         function updateScene() {
-            // Build a config hash to detect if anything actually changed
-            const currentPhaseCheck = getConstructionPhase(surveyState.currentQuestionIndex);
-            const answersHash = JSON.stringify(surveyState.answers) + '_' + surveyState.bedrooms + '_' + surveyState.occupants + '_' + surveyState.livingArea + '_' + surveyState.dwellingType + '_' + currentPhaseCheck;
-            if (answersHash === lastSceneConfig) {
-                console.log('⏭️ updateScene() skipped — no changes detected');
-                return;  // Nothing changed, skip full rebuild
-            }
-            lastSceneConfig = answersHash;
-
             // SAVE existing people BEFORE clearing
             const existingPeople = placedObjects.people ? [...placedObjects.people] : [];
             const previousPeopleCount = existingPeople.length;
@@ -4690,10 +4778,8 @@
             if (placedObjects) {
                 for (const key in placedObjects) {
                     const obj = placedObjects[key];
-                    // Track any non-null object (single or first element of array)
-                    if (obj && !Array.isArray(obj)) {
-                        previouslyPlacedAppliances.add(key);
-                    } else if (Array.isArray(obj) && obj.length > 0) {
+                    // Only consider it "previously placed" if it's not null/undefined and was animated
+                    if (obj && !Array.isArray(obj) && obj.userData && obj.userData.animateIn !== undefined) {
                         previouslyPlacedAppliances.add(key);
                     }
                 }
@@ -4712,20 +4798,9 @@
             placedObjects.people = [];
             placedObjects.solar = [];
 
-            // Only rebuild house when config or phase changes (avoids full geometry rebuild on every question)
-            const currentPhaseForConfig = getConstructionPhase(surveyState.currentQuestionIndex);
-            const houseConfig = `${surveyState.dwellingType}_${surveyState.bedrooms}_${surveyState.livingArea}_${currentPhaseForConfig}`;
-            if (houseConfig !== lastHouseConfig) {
-                buildHouse();
-                lastHouseConfig = houseConfig;
-            }
-
-            // Compute top floor offset for apartments (lift all interior content to top floor)
-            const isAptBuilding = surveyState.dwellingType === 'Apartment' || surveyState.dwellingType === 'Condo';
-            const computedFloors = houseGroup.userData.computedFloors || 1;
-            const floorHeightVal = houseGroup.userData.floorHeight || 4.5;
-            const topFloorOffset = isAptBuilding ? (computedFloors - 1) * floorHeightVal : 0;
-            const topFloorWorldY = topFloorOffset * 0.5;  // Convert to world units (scale 0.5)
+            // buildHouse() will handle floors based on dwelling type (apartments get multiple floors, single-family always 1)
+            // Do NOT override surveyState.floors here - let building-specific logic in buildHouse() handle it
+            buildHouse();
 
             // Trigger roof lift/descend animations based on phase transitions
             const currentPhase = getConstructionPhase(surveyState.currentQuestionIndex);
@@ -4779,35 +4854,31 @@
             if (answers.Q6 && answers.Q6.includes('heating')) {
                 console.log('   🔥 Creating Central Furnace');
                 placedObjects.heating = createFurnace();
-                const furnaceTargetY = 0.6 + topFloorOffset;
-                const furnaceX = Math.min(3.2, houseWidthForAppliances * 0.3);
-                const furnaceZ = Math.max(-1.5, -houseDepthForAppliances * 0.2);
-                if (previouslyPlacedAppliances.has('heating')) {
-                    placedObjects.heating.position.set(furnaceX, furnaceTargetY, furnaceZ);
-                    placedObjects.heating.scale.set(1, 1, 1);
-                } else {
-                    placedObjects.heating.position.set(furnaceX, furnaceTargetY + 5, furnaceZ);
-                    placedObjects.heating.scale.set(0, 0, 0);
+                const furnaceTargetY = 0.6;
+                const furnaceX = Math.min(3.2, houseWidthForAppliances * 0.3);  // Scale with house width
+                const furnaceZ = Math.max(-1.5, -houseDepthForAppliances * 0.2);  // Scale with house depth
+                placedObjects.heating.position.set(furnaceX, furnaceTargetY + 5, furnaceZ);  // Start 5 units above
+                placedObjects.heating.scale.set(0, 0, 0);  // Start invisible
+                // Only animate if this is a NEW appliance (wasn't placed before)
+                if (!previouslyPlacedAppliances.has('heating')) {
                     placedObjects.heating.userData.animateIn = true;
-                    placedObjects.heating.userData.targetY = furnaceTargetY;
                 }
+                placedObjects.heating.userData.targetY = furnaceTargetY;
                 appliancesGroup.add(placedObjects.heating);
             }
 
             if (answers.Q6 && answers.Q6.includes('heatPump')) {
                 console.log('   🔥 Creating Heat Pump');
                 placedObjects.heatPump = createHeatPump();
-                const heatPumpTargetY = 1.2 + topFloorOffset;
+                const heatPumpTargetY = 1.2;
+                placedObjects.heatPump.position.set(5.5, heatPumpTargetY + 5, 0);  // Start 5 units above
+                placedObjects.heatPump.scale.set(0, 0, 0);  // Start invisible
                 placedObjects.heatPump.rotation.y = Math.PI;
-                if (previouslyPlacedAppliances.has('heatPump')) {
-                    placedObjects.heatPump.position.set(5.5, heatPumpTargetY, 0);
-                    placedObjects.heatPump.scale.set(1, 1, 1);
-                } else {
-                    placedObjects.heatPump.position.set(5.5, heatPumpTargetY + 5, 0);
-                    placedObjects.heatPump.scale.set(0, 0, 0);
+                // Only animate if NEW
+                if (!previouslyPlacedAppliances.has('heatPump')) {
                     placedObjects.heatPump.userData.animateIn = true;
-                    placedObjects.heatPump.userData.targetY = heatPumpTargetY;
                 }
+                placedObjects.heatPump.userData.targetY = heatPumpTargetY;
                 appliancesGroup.add(placedObjects.heatPump);
             }
 
@@ -4825,17 +4896,14 @@
                 const backWallZ = -houseDepth / 2 + 0.8;  // Just inside BACK wall
                 // Use hallX position (will be defined later, so use placeholder for now)
                 const heaterX = 3;  // Right side, living hall area
-                const heaterTargetY = 0.3 + topFloorOffset;
-                baseboardHeater.rotation.y = Math.PI;
-                if (previouslyPlacedAppliances.has('baseboardHeaters')) {
-                    baseboardHeater.position.set(heaterX, heaterTargetY, backWallZ);
-                    baseboardHeater.scale.set(1, 1, 1);
-                } else {
-                    baseboardHeater.position.set(heaterX, heaterTargetY + 5, backWallZ);
-                    baseboardHeater.scale.set(0, 0, 0);
+                const heaterTargetY = 0.3;
+                baseboardHeater.position.set(heaterX, heaterTargetY + 5, backWallZ);  // Start 5 units above
+                baseboardHeater.rotation.y = Math.PI;  // Facing back wall
+                baseboardHeater.scale.set(0, 0, 0);  // Start invisible, will scale up
+                if (!previouslyPlacedAppliances.has('baseboardHeaters')) {
                     baseboardHeater.userData.animateIn = true;
-                    baseboardHeater.userData.targetY = heaterTargetY;
                 }
+                baseboardHeater.userData.targetY = heaterTargetY;
                 appliancesGroup.add(baseboardHeater);
 
                 placedObjects.baseboardHeaters = [baseboardHeater];
@@ -4914,30 +4982,29 @@
 
             // Update camera views dynamically based on room positions - FIXED CLIPPING
             const s = 0.5; // global scale factor
-            const yCam = 5.5 + topFloorWorldY;  // Raised for apartments on top floor
+            const yCam = 5.5; // Higher camera for room overview (was 4)
             const pad = 6; // Increased padding to prevent clipping (was 2.5 → now 3 world units offset)
-            const lookAtY = 1 + topFloorWorldY;  // Raised for apartments on top floor
 
             cameraViews.bathroom = {
                 pos: [(bathroomX + pad) * s, yCam, (frontCenterZ + pad) * s],  // Pull toward center
-                lookAt: [bathroomX * s, lookAtY, frontCenterZ * s]
+                lookAt: [bathroomX * s, 1, frontCenterZ * s]
             };
             cameraViews.kitchen = {
                 pos: [(kitchenX - pad) * s, yCam, (frontCenterZ + pad) * s],  // Angle from left-front
-                lookAt: [kitchenX * s, lookAtY, frontCenterZ * s]
+                lookAt: [kitchenX * s, 1, frontCenterZ * s]
             };
             cameraViews.livinghall = {
                 pos: [(hallX + pad) * s, yCam, (frontCenterZ + pad) * s],  // Angle from right-front
-                lookAt: [hallX * s, lookAtY, frontCenterZ * s]
+                lookAt: [hallX * s, 1, frontCenterZ * s]
             };
             cameraViews.bedroom = {
                 pos: [pad * s, yCam + 1, (backCenterZ + backDepth/2 + pad) * s],
-                lookAt: [0, lookAtY, backCenterZ * s]
+                lookAt: [0, 1, backCenterZ * s]
             };
             cameraViews.bedrooms = {
                 // Position camera to the SIDE of bedrooms for better visibility (not looking down from above)
-                pos: [-(pad + 2) * s, 3 * s + topFloorWorldY, backCenterZ * s],  // To the left, at middle height
-                lookAt: [0, 1.5 + topFloorWorldY, backCenterZ * s]  // Looking at center of bedroom zone
+                pos: [-(pad + 2) * s, 3 * s, backCenterZ * s],  // To the left, at middle height
+                lookAt: [0, 1.5, backCenterZ * s]  // Looking at center of bedroom zone
             };
 
             // DEBUG: Log room visibility info
@@ -4960,16 +5027,13 @@
                 const acTargetY = 0.5;
                 const acX = -houseWidthForAppliances * 0.3;  // Scale with house width
                 const acZ = -houseDepthForAppliances / 2 - 2;  // Scale with house depth
-                placedObjects.centralAC.rotation.y = 0;
-                if (previouslyPlacedAppliances.has('centralAC')) {
-                    placedObjects.centralAC.position.set(acX, acTargetY, acZ);
-                    placedObjects.centralAC.scale.set(1, 1, 1);
-                } else {
-                    placedObjects.centralAC.position.set(acX, acTargetY + 5, acZ);
-                    placedObjects.centralAC.scale.set(0, 0, 0);
+                placedObjects.centralAC.position.set(acX, acTargetY + 5, acZ);  // Start 5 units above
+                placedObjects.centralAC.rotation.y = 0;  // Facing forward (toward house)
+                placedObjects.centralAC.scale.set(0, 0, 0);  // Start invisible
+                if (!previouslyPlacedAppliances.has('centralAC')) {
                     placedObjects.centralAC.userData.animateIn = true;
-                    placedObjects.centralAC.userData.targetY = acTargetY;
                 }
+                placedObjects.centralAC.userData.targetY = acTargetY;
                 appliancesGroup.add(placedObjects.centralAC);
                 console.log('      ❄️ Central AC placed outside house at x=' + acX.toFixed(1) + ', z=' + acZ.toFixed(1));
             }
@@ -4980,16 +5044,13 @@
                 // Place OUTSIDE house at back (negative Z), next to AC unit
                 const coolTargetY = 0.5;
                 const coolZ = -houseDepthForAppliances / 2 - 2;  // Scale with house depth
+                placedObjects.centralCooling.position.set(0, coolTargetY + 5, coolZ);  // Start 5 units above
                 placedObjects.centralCooling.rotation.y = 0;
-                if (previouslyPlacedAppliances.has('centralCooling')) {
-                    placedObjects.centralCooling.position.set(0, coolTargetY, coolZ);
-                    placedObjects.centralCooling.scale.set(1, 1, 1);
-                } else {
-                    placedObjects.centralCooling.position.set(0, coolTargetY + 5, coolZ);
-                    placedObjects.centralCooling.scale.set(0, 0, 0);
+                placedObjects.centralCooling.scale.set(0, 0, 0);  // Start invisible
+                if (!previouslyPlacedAppliances.has('centralCooling')) {
                     placedObjects.centralCooling.userData.animateIn = true;
-                    placedObjects.centralCooling.userData.targetY = coolTargetY;
                 }
+                placedObjects.centralCooling.userData.targetY = coolTargetY;
                 appliancesGroup.add(placedObjects.centralCooling);
                 console.log('      🌀 Central Cooling placed outside house at z=' + coolZ.toFixed(1));
             }
@@ -5004,17 +5065,14 @@
                 console.log('   🌡️ Creating 3D Thermostat');
                 placedObjects.thermostat = createThermostat();
                 // Place on wall in living room at eye height
-                const thermoTargetY = 2.0 + topFloorOffset;
-                placedObjects.thermostat.rotation.y = 0;
-                if (previouslyPlacedAppliances.has('thermostat')) {
-                    placedObjects.thermostat.position.set(hallX, thermoTargetY, frontMinZ + 0.3);
-                    placedObjects.thermostat.scale.set(1, 1, 1);
-                } else {
-                    placedObjects.thermostat.position.set(hallX, thermoTargetY + 5, frontMinZ + 0.3);
-                    placedObjects.thermostat.scale.set(0, 0, 0);
+                const thermoTargetY = 2.0;
+                placedObjects.thermostat.position.set(hallX, thermoTargetY + 5, frontMinZ + 0.3);  // Start 5 units above
+                placedObjects.thermostat.rotation.y = 0;  // Face into room
+                placedObjects.thermostat.scale.set(0, 0, 0);  // Start invisible
+                if (!previouslyPlacedAppliances.has('thermostat')) {
                     placedObjects.thermostat.userData.animateIn = true;
-                    placedObjects.thermostat.userData.targetY = thermoTargetY;
                 }
+                placedObjects.thermostat.userData.targetY = thermoTargetY;
                 appliancesGroup.add(placedObjects.thermostat);
             }
 
@@ -5025,48 +5083,39 @@
 
                 if (answers.Q10.includes('electricOven') || answers.Q10.includes('gasOven')) {
                     placedObjects.oven = createOven();
-                    const ovenTargetY = 0.7 + topFloorOffset;
-                    if (previouslyPlacedAppliances.has('oven')) {
-                        placedObjects.oven.position.set(kitchenX + applianceOffset, ovenTargetY, kitchenZ);
-                        placedObjects.oven.scale.set(1, 1, 1);
-                    } else {
-                        placedObjects.oven.position.set(kitchenX + applianceOffset, ovenTargetY + 5, kitchenZ);
-                        placedObjects.oven.scale.set(0, 0, 0);
+                    const ovenTargetY = 0.7;
+                    placedObjects.oven.position.set(kitchenX + applianceOffset, ovenTargetY + 5, kitchenZ);  // Start above
+                    placedObjects.oven.scale.set(0, 0, 0);  // Start invisible
+                    if (!previouslyPlacedAppliances.has('oven')) {
                         placedObjects.oven.userData.animateIn = true;
-                        placedObjects.oven.userData.targetY = ovenTargetY;
                     }
+                    placedObjects.oven.userData.targetY = ovenTargetY;
                     appliancesGroup.add(placedObjects.oven);
                     applianceOffset += kitchenWidth / 3;
                 }
 
                 if (answers.Q10.includes('electricStove') || answers.Q10.includes('gasStove')) {
                     placedObjects.stove = createStove();
-                    const stoveTargetY = 0.7 + topFloorOffset;
-                    if (previouslyPlacedAppliances.has('stove')) {
-                        placedObjects.stove.position.set(kitchenX + applianceOffset, stoveTargetY, kitchenZ);
-                        placedObjects.stove.scale.set(1, 1, 1);
-                    } else {
-                        placedObjects.stove.position.set(kitchenX + applianceOffset, stoveTargetY + 5, kitchenZ);
-                        placedObjects.stove.scale.set(0, 0, 0);
+                    const stoveTargetY = 0.7;
+                    placedObjects.stove.position.set(kitchenX + applianceOffset, stoveTargetY + 5, kitchenZ);  // Start above
+                    placedObjects.stove.scale.set(0, 0, 0);  // Start invisible
+                    if (!previouslyPlacedAppliances.has('stove')) {
                         placedObjects.stove.userData.animateIn = true;
-                        placedObjects.stove.userData.targetY = stoveTargetY;
                     }
+                    placedObjects.stove.userData.targetY = stoveTargetY;
                     appliancesGroup.add(placedObjects.stove);
                     applianceOffset += kitchenWidth / 3;
                 }
 
                 if (answers.Q10.includes('fridge')) {
                     placedObjects.fridge = createRefrigerator();
-                    const fridgeTargetY = 1.0 + topFloorOffset;
-                    if (previouslyPlacedAppliances.has('fridge')) {
-                        placedObjects.fridge.position.set(kitchenX + applianceOffset, fridgeTargetY, kitchenZ);
-                        placedObjects.fridge.scale.set(1, 1, 1);
-                    } else {
-                        placedObjects.fridge.position.set(kitchenX + applianceOffset, fridgeTargetY + 5, kitchenZ);
-                        placedObjects.fridge.scale.set(0, 0, 0);
+                    const fridgeTargetY = 1.0;
+                    placedObjects.fridge.position.set(kitchenX + applianceOffset, fridgeTargetY + 5, kitchenZ);  // Start above
+                    placedObjects.fridge.scale.set(0, 0, 0);  // Start invisible
+                    if (!previouslyPlacedAppliances.has('fridge')) {
                         placedObjects.fridge.userData.animateIn = true;
-                        placedObjects.fridge.userData.targetY = fridgeTargetY;
                     }
+                    placedObjects.fridge.userData.targetY = fridgeTargetY;
                     appliancesGroup.add(placedObjects.fridge);
                 }
             }
@@ -5083,7 +5132,7 @@
                 // Dishwasher goes in kitchen
                 if (answers.Q11.includes('dishwasher')) {
                     placedObjects.dishwasher = createDishwasher();
-                    placedObjects.dishwasher.position.set(kitchenX - kitchenWidth / 3, 0.7 + topFloorOffset, kitchenZ + frontDepth / 4);
+                    placedObjects.dishwasher.position.set(kitchenX - kitchenWidth / 3, 0.7, kitchenZ + frontDepth / 4);
                     placedObjects.dishwasher.scale.set(1.0, 1.0, 1.0);
                     appliancesGroup.add(placedObjects.dishwasher);
                 }
@@ -5092,26 +5141,20 @@
             // Solar panels - On BACK of roof (don't block front view!)
             if (answers.Q12 === 'yes') {
                 console.log('   ☀️ Creating Solar Panels on BACK of ROOF - LARGE');
-                // Flat roof: sits at floors*floorHeight + 0.3, peaked roof peak: floors*floorHeight + 1.25 (midslope)
-                const roofY = isFlatRoof
-                    ? computedFloors * floorHeightVal + 0.4  // Just above flat roof surface
-                    : computedFloors * floorHeightVal + 1.5; // Midway up peaked roof slope
-                const isFlatRoof = isAptBuilding || surveyState.dwellingType === 'Condo';
-                const panelCount = isFlatRoof ? 4 : 3;  // More panels on flat roofs
-                const roofWidth = houseGroup.userData.houseWidth || 20;
-                const roofDepth = houseGroup.userData.houseDepth || 15;
+                const roofY = surveyState.floors * 4.5 + 1.5;  // Correct: use floorHeight = 4.5
+                const panelCount = 3;  // 3 panels
                 for (let i = 0; i < panelCount; i++) {
                     const panel = createSolarPanel();
-                    // Spread panels across roof width
-                    const xSpacing = Math.min(2.5, (roofWidth - 4) / Math.max(1, panelCount - 1));
+                    // Place on BACK of roof (negative Z) so they don't block front view
+                    const xSpacing = 2.0;
                     const xStart = -(panelCount - 1) * xSpacing / 2;
-                    const backZ = isFlatRoof ? -roofDepth * 0.15 : -roofDepth * 0.3;  // Center on flat roofs, back on peaked
+                    const backZ = -5.0;  // BACK of roof (deeper for bigger house)
                     panel.position.set(xStart + i * xSpacing, roofY, backZ);
-                    panel.scale.set(2.0, 2.0, 2.0);
-                    panel.rotation.x = isFlatRoof ? 0 : -Math.PI / 8;  // Flat on flat roofs, tilted on peaked
+                    panel.scale.set(2.0, 2.0, 2.0);  // 2.0X LARGER
+                    panel.rotation.x = -Math.PI / 8;  // Slight tilt for realistic solar angle
                     appliancesGroup.add(panel);
                     placedObjects.solar.push(panel);
-                    console.log('      ☀️ Solar Panel ' + (i+1) + ' at y=' + roofY.toFixed(1) + ', z=' + backZ.toFixed(1));
+                    console.log('      ☀️ Solar Panel ' + (i+1) + ' on BACK of roof at z=' + backZ);
                 }
             }
 
@@ -5164,14 +5207,14 @@
             if (answers.Q15) {
                 if (answers.Q15.includes('tv')) {
                     placedObjects.tv = createTV();
-                    placedObjects.tv.position.set(hallX, 1.0 + topFloorOffset, hallZ + frontDepth / 4);
+                    placedObjects.tv.position.set(hallX, 1.0, hallZ + frontDepth / 4);
                     placedObjects.tv.scale.set(1.2, 1.2, 1.2);
                     appliancesGroup.add(placedObjects.tv);
                 }
 
                 if (answers.Q15.includes('computer')) {
                     const computer = createComputer();
-                    computer.position.set(hallX - livingWidth / 3, 0.7 + topFloorOffset, hallZ - frontDepth / 4);
+                    computer.position.set(hallX - livingWidth / 3, 0.7, hallZ - frontDepth / 4);
                     computer.scale.set(0.8, 0.8, 0.8);
                     appliancesGroup.add(computer);
                     placedObjects.computer = computer;
@@ -5179,7 +5222,7 @@
 
                 if (answers.Q15.includes('gameConsole')) {
                     const gameConsole = createGameConsole();
-                    gameConsole.position.set(hallX + livingWidth / 4, 0.6 + topFloorOffset, hallZ);
+                    gameConsole.position.set(hallX + livingWidth / 4, 0.6, hallZ);
                     gameConsole.scale.set(0.8, 0.8, 0.8);
                     appliancesGroup.add(gameConsole);
                     placedObjects.gameConsole = gameConsole;
@@ -5189,9 +5232,7 @@
             // ===================================================
             // ROOM LAYOUT - All rooms WITHIN house boundary
             // ===================================================
-            // topFloorOffset is already computed at start of updateScene()
-            // For apartments/condos: interior lifts to top floor (Y = 0.5 + topFloorOffset)
-            const floorY = 0.5 + topFloorOffset;
+            const floorY = 0.5;
             const wallHeight = 2.4;
             const partitionMat = new THREE.MeshLambertMaterial({
                 color: 0xe8e0d0,
@@ -5397,7 +5438,7 @@
             if (answers.Q5) {
                 const numPeople = surveyState.occupants || 1;
                 const radius = Math.max(0.5, Math.min(innerW * 0.2, backDepth * 0.3));
-                const floorY = 0.5 + topFloorOffset;
+                const floorY = 0.5;
                 const personTargetY = floorY + 0.5;
 
                 console.log('👥 PEOPLE: Q5 answered with ' + numPeople + ' people (had ' + previousPeopleCount + ')');
@@ -5630,6 +5671,18 @@
             if (pb) pb.style.width = progress + '%';
             if (pt) pt.textContent = `Q${surveyState.currentQuestionIndex + 1} of ${surveyQuestions.length}`;
 
+            // Gamification: Show Mascot tooltip
+            const speech = document.getElementById('mascotSpeech');
+            const mascotObj = document.getElementById('mascotImage');
+            if (speech && mascotObj) {
+                speech.classList.remove('visible');
+                mascotObj.classList.add('visible');
+                setTimeout(() => {
+                    speech.textContent = question.tooltip || "Let's keep going!";
+                    speech.classList.add('visible');
+                }, 300);
+            }
+
             const inject = () => {
                 const enterClass = direction === 'back' ? 'entering-back' : 'entering';
                 container.innerHTML = `<div class="question-content ${direction ? enterClass : ''}">${buildQuestionHTML(question)}</div>`;
@@ -5853,17 +5906,36 @@
                 completionScreen.classList.add('visible');
 
                 // Generate summary badges
-                const badges = [];
-                if (surveyState.answers.Q1) badges.push(`🏠 ${surveyState.answers.Q1}`);
-                if (surveyState.bedrooms) badges.push(`🛏️ ${surveyState.bedrooms} Bedrooms`);
-                if (surveyState.occupants) badges.push(`👥 ${surveyState.occupants} People`);
-                if (surveyState.livingArea) badges.push(`📏 ${surveyState.livingArea.toLocaleString()} sq ft`);
-                if (surveyState.answers.Q12 === 'yes') badges.push(`☀️ Solar Powered`);
-                if (surveyState.answers.Q13 === 'yes') badges.push(`🚗 EV Owner`);
-                if (surveyState.answers.Q14 === 'yes') badges.push(`🏊 Pool`);
-
                 const badgesContainer = document.getElementById('summaryBadges');
-                badgesContainer.innerHTML = badges.map(b => `<div class="badge">${b}</div>`).join('');
+                let html = '';
+
+                // Core Stats
+                html += `<div class="badge">🏠 ${surveyState.answers.Q1 || 'Home'}</div>`;
+                html += `<div class="badge">🛏️ ${surveyState.bedrooms} Beds</div>`;
+                
+                // GAMIFICATION: Eco-Badges Logic
+                const isSolar = surveyState.answers.Q12 === 'yes';
+                const isEV = surveyState.answers.Q13 === 'yes';
+                const hasHeatPump = surveyState.answers.Q6 && surveyState.answers.Q6.includes('heatPump');
+                const hasSmartThermostat = surveyState.answers.Q9 === 'yes';
+
+                if (isSolar) {
+                    html += `<div class="badge gold">☀️ Sun Catcher</div>`;
+                }
+                if (isEV) {
+                    html += `<div class="badge gold">🚗 Future Driver</div>`;
+                }
+                if (hasHeatPump) {
+                    html += `<div class="badge gold">⚡ Electrified Heat</div>`;
+                }
+                if (hasSmartThermostat) {
+                    html += `<div class="badge gold">📱 Tech Wizard</div>`;
+                }
+                if (surveyState.answers.Q14 === 'yes') {
+                    html += `<div class="badge">🏊 Pool</div>`;
+                }
+
+                badgesContainer.innerHTML = html;
 
                 // Dismiss overlay to expose 3D house
                 document.getElementById('completionDismiss').addEventListener('click', () => {
@@ -5885,8 +5957,6 @@
             surveyState.floors = 1;
             surveyState.occupants = 2;
             surveyState.livingArea = 1500;
-            lastHouseConfig = null;  // Force house rebuild on restart
-            lastSceneConfig = null;  // Force scene rebuild on restart
 
             document.getElementById('completionScreen').classList.remove('visible');
             document.getElementById('surveyPanel').classList.remove('hidden');
